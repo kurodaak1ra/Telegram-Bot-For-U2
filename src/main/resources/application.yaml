@@ -1,0 +1,11 @@
+bot:
+  token:
+  username:
+
+u2:
+  domain: https://u2.dmhy.org
+  cookie_key: nexusphp_u2
+
+#logging:
+#  level:
+#    root: debug
