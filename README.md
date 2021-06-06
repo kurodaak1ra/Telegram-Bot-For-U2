@@ -6,6 +6,16 @@
 1. 一台电脑或服务器
 2. 需部署在可以访问 Google 的网络环境下（国外服务器、国内 IPLC）
 3. 自行 @BotFather 申请注册一个属于自己的 Bot
+4. 设置 Bot 的 command 为
+```
+captcha - 获取登陆验证码
+login - 登陆
+logout - 登出
+me - 当前用户
+transfer - 送金币
+transfer_info - 送金币当前队列信息
+transfer_cancel - 取消送金币等待队列
+```
 
 ### 环境搭建
 1. 请在电脑或服务器先安装 JDK（推荐 OpenJDK 8）
