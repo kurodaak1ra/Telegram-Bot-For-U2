@@ -1,4 +1,4 @@
-# U2 Tool Box For Telegram
+# Telegram U2 Tool Box Bot
 
 ## 因 PT 站政策原因，无法部署到统一一个 Bot，所以项目需自行部署
 
