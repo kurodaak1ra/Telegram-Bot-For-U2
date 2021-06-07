@@ -10,7 +10,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.Charsets;
-import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -33,20 +32,16 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.objects.InputFile;
 
 import javax.net.ssl.*;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.security.GeneralSecurityException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -127,7 +122,7 @@ public class HttpUtils implements ApplicationListener<ContextRefreshedEvent> {
     }
   }
 
-  private static Response req(HttpRequestBase request) throws HttpException {
+  private static Response req(Long gid, HttpRequestBase request) throws HttpException {
     CloseableHttpClient cli = HttpClients.custom().setSSLSocketFactory(createSSLConnSocketFactory()).setConnectionManager(connMgr).setDefaultRequestConfig(requestConfig).build();
     HttpClientContext context = HttpClientContext.create();
 
@@ -146,30 +141,30 @@ public class HttpUtils implements ApplicationListener<ContextRefreshedEvent> {
       // log.info("[Http Response Body <"+ code +"> <"+ request.getURI() +">]\n\n{}\n", new String(result));
       if (Objects.nonNull(html) && !html.getIs()) log.info("[Http Response Body <"+ code +"> <"+ request.getURI() +">]\n\n{}\n", new String(result));
       if (code >= 400 && code < 500) {
-        applicationContext.getBean(Receiver.class).sendMsg(Config.uid, Text.NOT_FOUND, "md", -1);
+        applicationContext.getBean(Receiver.class).sendMsg(gid, Text.NOT_FOUND, "md", -1);
         throw new HttpException(code, result.toString());
       }
       if (code >= 500) {
-        applicationContext.getBean(Receiver.class).sendMsg(Config.uid, Text.U2_SERVER_ERROR, "md", -1);
+        applicationContext.getBean(Receiver.class).sendMsg(gid, Text.U2_SERVER_ERROR, "md", -1);
         throw new HttpException(code, result.toString());
       }
       return new Response(response, code, result, html);
     } catch (IOException e) {
       log.error("[Request Exception "+ request.getURI() +"]", e);
-      applicationContext.getBean(Receiver.class).sendMsg(Config.uid, Text.REQUEST_ERROR, "md", -1);
+      applicationContext.getBean(Receiver.class).sendMsg(gid, Text.REQUEST_ERROR, "md", -1);
       throw new HttpException(502, e.getMessage());
     } finally {
       request.releaseConnection();
     }
   }
 
-  public static RespGet get(String uri) throws HttpException {
+  public static RespGet get(Long gid, String uri) throws HttpException {
     HttpGet get = new HttpGet(U2Domain + uri);
     get.addHeader("accept", "*/*");
     get.addHeader("user-agent", UA);
     if (!Config.session.isEmpty()) get.addHeader("cookie", cookieToString());
 
-    Response resp = req(get);
+    Response resp = req(gid, get);
     if (Objects.nonNull(resp.getHtml())) {
       isLogin(resp.html.getHtml());
       if (resp.html.getIs()) return new RespGet(resp.getCode(), null, resp.html.getHtml());
@@ -177,16 +172,16 @@ public class HttpUtils implements ApplicationListener<ContextRefreshedEvent> {
 
     return new RespGet(resp.getCode(), resp.getResult(), null);
   }
-  public static InputStream getPic(String uri) throws HttpException {
+  public static InputStream getPic(Long gid, String uri) throws HttpException {
     HttpGet get = new HttpGet(U2Domain + uri);
     get.addHeader("accept", "*/*");
     get.addHeader("user-agent", UA);
     if (!Config.session.isEmpty()) get.addHeader("cookie", cookieToString());
 
-    return new ByteArrayInputStream(req(get).getResult());
+    return new ByteArrayInputStream(req(gid, get).getResult());
   }
 
-  private static RespPost post(String uri, String mediaType, HttpEntity entity) throws HttpException {
+  private static RespPost post(Long gid, String uri, String mediaType, HttpEntity entity) throws HttpException {
     HttpPost post = new HttpPost(U2Domain + uri);
     post.addHeader("content-type", mediaType);
     post.addHeader("accept", "*/*");
@@ -194,14 +189,14 @@ public class HttpUtils implements ApplicationListener<ContextRefreshedEvent> {
     if (!Config.session.isEmpty()) post.addHeader("cookie", cookieToString());
     post.setEntity(entity);
 
-    Response resp = req(post);
+    Response resp = req(gid, post);
 
     if (resp.getCode() == 200) {
       if (resp.html.getIs()) return new RespPost(resp.getCode(), null, resp.html.getHtml());
       else return new RespPost(resp.getCode(), new Gson().fromJson(new String(resp.getResult()), new TypeToken<Map<String, String>>() {}.getType()), null);
     } else if (resp.getCode() == 302) {
       String redirectURL = resp.getResponse().getFirstHeader("location").getValue();
-      if (!redirectURL.equals("")) post(redirectURL, mediaType, entity);
+      if (!redirectURL.equals("")) post(gid, redirectURL, mediaType, entity);
     }
 
     return new RespPost(resp.getCode(), null, null);
@@ -212,9 +207,9 @@ public class HttpUtils implements ApplicationListener<ContextRefreshedEvent> {
   //   return post(path, "application/json", entity);
   // }
 
-  public static RespPost postForm(String path, List<NameValuePair> parametersBody) throws HttpException {
+  public static RespPost postForm(Long gid, String path, List<NameValuePair> parametersBody) throws HttpException {
     HttpEntity entity = new UrlEncodedFormEntity(parametersBody, Charsets.UTF_8);
-    return post(path, "application/x-www-form-urlencoded", entity);
+    return post(gid, path, "application/x-www-form-urlencoded", entity);
   }
 
   private static ParseHTML isHTML(byte[] result) {

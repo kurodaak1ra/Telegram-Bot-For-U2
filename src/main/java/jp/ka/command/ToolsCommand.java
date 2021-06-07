@@ -12,9 +12,9 @@ import java.util.List;
 
 public class ToolsCommand {
 
-  public static boolean setUserData() {
+  public static boolean setUserData(Long gid) {
     try {
-      RespGet resp = HttpUtils.get("/index.php");
+      RespGet resp = HttpUtils.get(gid,"/index.php");
       Elements mediums = resp.getHtml().getElementsByClass("medium");
       if (mediums.size() == 0) return false;
       Element medium = mediums.get(0);

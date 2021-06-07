@@ -1,0 +1,13 @@
+[Unit]
+Description=Telegram Bot For U2
+After=network.target nginx.service
+
+[Service]
+Type=simple
+WorkingDirectory=/home/
+ExecStart=/usr/bin/java -jar /home/telegram-bot-for-u2-0.0.1-SNAPSHOT.jar --bot.username={username} --bot.token={token}
+Restart=always
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target

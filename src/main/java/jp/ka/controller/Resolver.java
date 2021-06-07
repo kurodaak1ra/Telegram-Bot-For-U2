@@ -39,7 +39,7 @@ public class Resolver implements ApplicationListener<ContextRefreshedEvent> {
 
       if (Objects.isNull(command)) return;
       boolean hasCookie = Config.session.containsKey(Config.cookieKey);
-      if ((hasCookie && command.needLogin()) || (!hasCookie && !command.needLogin())) {
+      if ((hasCookie && (!command.getClass().getSimpleName().equals("CaptchaCommand") && !command.getClass().getSimpleName().equals("LoginCommand"))) || (!hasCookie && !command.needLogin())) {
         command.execute(update);
         return;
       }

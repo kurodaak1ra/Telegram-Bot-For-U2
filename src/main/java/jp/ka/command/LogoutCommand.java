@@ -23,7 +23,7 @@ public class LogoutCommand extends Command {
     receiver.sendMsg(gid, Text.WAITING, "md", -1);
     try {
       Config.session.clear();
-      HttpUtils.get("/logout.php?key=" + U2.pageKey);
+      HttpUtils.get(gid, "/logout.php?key=" + U2.pageKey);
       receiver.sendMsg(gid, "*登出成功！*", "md", -1);
     } catch (HttpException e) { }
   }

@@ -36,7 +36,7 @@ public class TransferCancelCommand extends Command {
 
   @Override
   public String description() {
-    return "取消送金币队列";
+    return "取消转账队列";
   }
 
 }

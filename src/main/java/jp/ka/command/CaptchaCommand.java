@@ -30,7 +30,7 @@ public class CaptchaCommand extends Command {
 
     receiver.sendMsg(gid, Text.WAITING, "md", -1);
     try {
-      InputStream resp = HttpUtils.getPic("/captcha.php?sid=" + Math.random());
+      InputStream resp = HttpUtils.getPic(gid, "/captcha.php?sid=" + Math.random());
       receiver.sendDocs(gid, "captcha code", new InputFile().setMedia(resp, "captcha"));
       Config.step = CMD.CAPTCHA;
     } catch (HttpException e) { }
@@ -48,7 +48,7 @@ public class CaptchaCommand extends Command {
 
   @Override
   public String description() {
-    return "验证码";
+    return "登陆验证码";
   }
 
 }

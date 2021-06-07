@@ -1,10 +1,16 @@
+user:
+  id:
+
 bot:
+  api:
   token:
   username:
 
 u2:
   domain: https://u2.dmhy.org
-  cookie_key: nexusphp_u2
+  cookie:
+    key: nexusphp_u2
+    value:
 
 #logging:
 #  level:

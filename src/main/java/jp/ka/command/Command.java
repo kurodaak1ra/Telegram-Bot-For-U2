@@ -10,7 +10,7 @@ public abstract class Command {
   public abstract String description();
 
   public enum CMD {
-    CAPTCHA, LOGIN, LOGOUT, ME, TRANSFER, TRANSFER_INFO, TRANSFER_CANCEL
+    ALL, CAPTCHA, LOGIN, LOGOUT, ME, TRANSFER, TRANSFER_INFO, TRANSFER_DELETE, TRANSFER_CANCEL, SIGN
   }
 
 }

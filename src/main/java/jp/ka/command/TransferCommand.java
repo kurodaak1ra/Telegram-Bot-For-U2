@@ -65,11 +65,11 @@ public class TransferCommand extends Command {
 
   @Override
   public String description() {
-    return "送金币";
+    return "金币转账";
   }
 
   private String copyWriting() {
-    return "\n\n`/transfer`\n`<uid - 对方UID>`\n`<count - 数量>`\n`<message - 留言（可省略）>`";
+    return "\n\n`/transfer`\n`<uid - 可多个空格分隔>`\n`<count - 数量>`\n`<message - 留言（可省略）>`";
   }
 
   private boolean transferCoin(Long gid, String recvID, String amount, String message) {
@@ -80,7 +80,7 @@ public class TransferCommand extends Command {
     params.add(new BasicNameValuePair("message", message));
 
     try {
-      RespPost resp = HttpUtils.postForm("/mpshop.php", params);
+      RespPost resp = HttpUtils.postForm(gid, "/mpshop.php", params);
       if (resp.getCode() == 200) {
         Element embedded = resp.getHtml().getElementsByClass("embedded").get(1);
         Element text = embedded.getElementsByClass("text").get(0);

@@ -20,6 +20,11 @@ import java.util.Objects;
 @Component
 public class Receiver extends TelegramLongPollingBot {
 
+  private static String api;
+  @Value("${bot.api}")
+  public void setApi(String api) {
+    this.api = api;
+  }
   @Value("${bot.token}")
   private String token;
   @Value("${bot.username}")
@@ -44,7 +49,6 @@ public class Receiver extends TelegramLongPollingBot {
 
   @Override
   public void onUpdateReceived(Update update) {
-    // 加入群组立即退出
     if (update.hasMessage() && Objects.nonNull(update.getMessage().getNewChatMembers())) {
       for (User member : update.getMessage().getNewChatMembers()) {
         try {
@@ -58,31 +62,24 @@ public class Receiver extends TelegramLongPollingBot {
       }
     }
 
-    // 获取 message
     Message msg = null;
     if (update.hasMessage()) msg = update.getMessage();
     else if (update.hasCallbackQuery()) msg = update.getCallbackQuery().getMessage();
 
-    // 没有 message return
     if (Objects.isNull(msg)) return;
-
-    // 非 Bot 私聊
     if (!update.getMessage().getChat().getId().equals(update.getMessage().getFrom().getId())) return;
-
-    // 已登陆锁定用户
-    if (Objects.nonNull(Config.uid) && !msg.getFrom().getId().equals(Config.uid)) {
+    if (!msg.getFrom().getId().equals(Config.uid)) {
       sendMsg(msg.getChatId(), "无权操作", "md", -1);
       return;
     }
 
-    // 下发
     resolver.executeCommand(update);
   }
 
   private static DefaultBotOptions options() {
     DefaultBotOptions opt = new DefaultBotOptions();
     opt.setAllowedUpdates(Arrays.asList("message", "chat_member", "callback_query"));
-    // opt.setBaseUrl("http://127.0.0.1");
+    if (Objects.nonNull(api)) opt.setBaseUrl(api);
 
     return opt;
   }

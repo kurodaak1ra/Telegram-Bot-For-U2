@@ -9,10 +9,10 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>jp.ka</groupId>
-    <artifactId>u2-tools-bot</artifactId>
+    <artifactId>telegram-bot-for-u2</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>u2-tools-bot</name>
-    <description>Demo project for Spring Boot</description>
+    <name>telegram-bot-for-u2</name>
+    <description>Telegram Bot - U2 Tool Box</description>
     <properties>
         <java.version>1.8</java.version>
         <skipTests>true</skipTests>

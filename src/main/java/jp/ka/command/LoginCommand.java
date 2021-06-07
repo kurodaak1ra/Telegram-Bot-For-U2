@@ -59,7 +59,7 @@ public class LoginCommand extends Command {
       params.add(new BasicNameValuePair("password", split[2].trim()));
       params.add(new BasicNameValuePair("captcha", split[3].trim()));
 
-      RespPost resp = HttpUtils.postForm("/takelogin.php", params);
+      RespPost resp = HttpUtils.postForm(gid, "/takelogin.php", params);
       if (resp.getData().get("status").equals("error")) {
         String errMsg = "";
         switch (resp.getData().get("message")) {
@@ -80,7 +80,7 @@ public class LoginCommand extends Command {
       Config.uid = msg.getFrom().getId();
       Config.step = null;
       String tmpMsg = "*登陆成功，个人信息获取失败*";
-      if (ToolsCommand.setUserData()) {
+      if (ToolsCommand.setUserData(gid)) {
         tmpMsg = String.format("*登陆成功！*\n\n__UID__: `%s`\n__用户名__: `%s`\n__分享率__: `%s`\n__上传量__: `%s`\n__下载量__: `%s`\n__UCoin__: `%s/%s/%s`\n__邀请__: `%s`\n__客户端__: `%s`\n__上传__: `%s`\n__下载__: `%s`",
             U2.uid, U2.username, U2.shareRate, U2.uploads, U2.downloads, U2.coinGold, U2.coinSilver, U2.coinCopper, U2.invite, U2.client, U2.uploading, U2.downloading);
       }
