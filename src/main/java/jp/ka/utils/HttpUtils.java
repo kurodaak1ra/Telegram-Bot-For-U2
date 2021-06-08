@@ -2,6 +2,8 @@ package jp.ka.utils;
 
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
+import jp.ka.bean.RespGet;
+import jp.ka.bean.RespPost;
 import jp.ka.config.Config;
 import jp.ka.config.Text;
 import jp.ka.controller.Receiver;

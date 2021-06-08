@@ -2,27 +2,19 @@ package jp.ka.command;
 
 import jp.ka.config.Config;
 import jp.ka.config.Text;
-import jp.ka.config.U2;
 import jp.ka.controller.Receiver;
 import jp.ka.exception.HttpException;
-import jp.ka.utils.RespGet;
 import jp.ka.utils.HttpUtils;
-import jp.ka.utils.RespPost;
+import jp.ka.bean.RespPost;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.nodes.TextNode;
-import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 @Slf4j

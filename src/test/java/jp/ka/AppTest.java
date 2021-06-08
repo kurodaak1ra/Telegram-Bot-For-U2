@@ -3,18 +3,12 @@ package jp.ka;
 import jp.ka.exception.HttpException;
 import jp.ka.utils.HttpUtils;
 import jp.ka.utils.RedisUtils;
-import jp.ka.utils.RespGet;
+import jp.ka.bean.RespGet;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 @SpringBootTest
 public class AppTest {

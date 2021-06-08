@@ -4,15 +4,11 @@ import jp.ka.config.U2;
 import jp.ka.controller.Receiver;
 import jp.ka.exception.HttpException;
 import jp.ka.utils.HttpUtils;
-import jp.ka.utils.RespGet;
+import jp.ka.bean.RespGet;
 import jp.ka.utils.Store;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 
 import java.util.List;
 

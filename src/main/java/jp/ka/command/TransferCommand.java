@@ -5,7 +5,7 @@ import jp.ka.config.U2;
 import jp.ka.controller.Receiver;
 import jp.ka.exception.HttpException;
 import jp.ka.utils.HttpUtils;
-import jp.ka.utils.RespPost;
+import jp.ka.bean.RespPost;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 import org.jsoup.nodes.Element;
