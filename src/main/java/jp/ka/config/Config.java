@@ -1,7 +1,7 @@
 package jp.ka.config;
 
 import jp.ka.command.Command;
-import jp.ka.command.ToolsCommand;
+import jp.ka.command.impl.ToolsCommand;
 import jp.ka.controller.CallbackResolver;
 import jp.ka.controller.CommandResolver;
 import jp.ka.utils.Store;
