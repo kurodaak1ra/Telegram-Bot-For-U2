@@ -16,6 +16,7 @@ transfer - 金币转账
 transfer_info - 当前转账队列
 transfer_delete - 删除队列中一个或多个 UID
 transfer_cancel - 取消转账队列
+sign - 签到
 ```
 
 ### 环境搭建
