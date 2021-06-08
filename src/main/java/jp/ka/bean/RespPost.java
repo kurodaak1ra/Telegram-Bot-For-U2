@@ -1,17 +1,19 @@
-package jp.ka.utils;
+package jp.ka.bean;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.jsoup.nodes.Document;
 
+import java.util.Map;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class RespGet {
+public class RespPost {
 
   private Integer code;
-  private byte[] data;
+  private Map<String, String> data;
   private Document html;
 
 }
