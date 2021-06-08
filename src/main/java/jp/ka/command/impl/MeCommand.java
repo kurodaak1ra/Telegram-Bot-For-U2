@@ -1,36 +1,33 @@
-package jp.ka.command;
+package jp.ka.command.impl;
 
-import jp.ka.config.Config;
+import jp.ka.command.Command;
 import jp.ka.config.Text;
-import jp.ka.config.U2;
 import jp.ka.controller.Receiver;
-import jp.ka.exception.HttpException;
-import jp.ka.utils.HttpUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
+@Slf4j
 @Component
-public class LogoutCommand implements Command {
+public class MeCommand implements Command {
 
   @Autowired
   private Receiver receiver;
 
   @Override
   public void execute(Update update) {
-    Long gid = update.getMessage().getChatId();
+    Message msg = update.getMessage();
+    Long gid = msg.getChatId();
 
     receiver.sendMsg(gid, Text.WAITING, "md");
-    try {
-      Config.session.clear();
-      HttpUtils.get(gid, "/logout.php?key=" + U2.pageKey);
-      receiver.sendMsg(gid, "*登出成功！*", "md");
-    } catch (HttpException e) { }
+    ToolsCommand.setUserData(gid);
   }
 
   @Override
   public CMD cmd() {
-    return CMD.LOGOUT;
+    return CMD.ME;
   }
 
   @Override
@@ -40,7 +37,7 @@ public class LogoutCommand implements Command {
 
   @Override
   public String description() {
-    return "登出";
+    return "个人信息";
   }
 
 }
