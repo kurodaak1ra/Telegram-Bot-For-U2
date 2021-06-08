@@ -6,11 +6,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.DefaultBotOptions;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.methods.groupadministration.LeaveChat;
 import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.objects.*;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.util.Arrays;
@@ -30,11 +33,13 @@ public class Receiver extends TelegramLongPollingBot {
   @Value("${bot.username}")
   private String username;
 
-  private final Resolver resolver;
+  private final CommandResolver commandResolver;
+  private final CallbackResolver callbackResolver;
 
-  public Receiver(Resolver resolver) {
+  public Receiver(CommandResolver commandResolver, CallbackResolver callbackResolver) {
     super(options());
-    this.resolver = resolver;
+    this.commandResolver = commandResolver;
+    this.callbackResolver = callbackResolver;
   }
 
   @Override
@@ -62,18 +67,19 @@ public class Receiver extends TelegramLongPollingBot {
       }
     }
 
-    Message msg = null;
-    if (update.hasMessage()) msg = update.getMessage();
-    else if (update.hasCallbackQuery()) msg = update.getCallbackQuery().getMessage();
-
-    if (Objects.isNull(msg)) return;
-    if (!update.getMessage().getChat().getId().equals(update.getMessage().getFrom().getId())) return;
-    if (!msg.getFrom().getId().equals(Config.uid)) {
-      sendMsg(msg.getChatId(), "无权操作", "md", -1);
-      return;
+    if (update.hasMessage()) {
+      Message msg = update.getMessage();
+      Long gid = msg.getChatId();
+      Long uid = msg.getFrom().getId();
+      if (!gid.equals(uid)) return;
+      if (Objects.nonNull(Config.uid) && !uid.equals(Config.uid)) {
+        sendMsg(gid, "无权操作", "md");
+        return;
+      }
+      commandResolver.executeCommand(update);
+    } else if (update.hasCallbackQuery()) {
+      callbackResolver.executeCommand(update);
     }
-
-    resolver.executeCommand(update);
   }
 
   private static DefaultBotOptions options() {
@@ -84,12 +90,12 @@ public class Receiver extends TelegramLongPollingBot {
     return opt;
   }
 
-  public Message sendMsg(Long gid, String text, String parse, Integer reply) {
+  public Message sendMsg(Long gid, String text, String parse) {
     SendMessage message = new SendMessage(); // Create a SendMessage object with mandatory fields
     message.setChatId(gid.toString());
     message.setText(text);
     if (!parse.equals("")) message.setParseMode(parse.equals("md") ? "MarkdownV2" : "HTML");
-    if (reply.longValue() > 0) message.setReplyToMessageId(reply);
+    // if (reply.longValue() > 0) message.setReplyToMessageId(reply);
 
     try {
       return execute(message); // Call method to send the message
@@ -100,7 +106,7 @@ public class Receiver extends TelegramLongPollingBot {
     return null;
   }
 
-  public Message sendDocs(Long gid, String caption, InputFile file) {
+  public Message sendDoc(Long gid, String caption, InputFile file) {
     SendDocument doc = new SendDocument();
     doc.setChatId(gid.toString());
     if (!caption.equals("")) doc.setCaption(caption);
@@ -108,6 +114,40 @@ public class Receiver extends TelegramLongPollingBot {
 
     try {
       return execute(doc); // Call method to send the message
+    } catch (TelegramApiException e) {
+      log.error("[sendDoc -> execute()]", e);
+    }
+
+    return null;
+  }
+
+  public Message sendImg(Long gid, String caption, InputFile img, InlineKeyboardMarkup btns) {
+    SendPhoto photo = new SendPhoto();
+    photo.setChatId(gid.toString());
+    if (!caption.equals("")) photo.setCaption(caption);
+    if (Objects.nonNull(btns)) {
+      photo.setReplyMarkup(btns);
+      // photo.setAllowSendingWithoutReply(true);
+    }
+
+    photo.setPhoto(img);
+
+    try {
+      return execute(photo); // Call method to send the message
+    } catch (TelegramApiException e) {
+      log.error("[sendImg -> execute()]", e);
+    }
+
+    return null;
+  }
+
+  public Boolean sendCallbackAnswer(String qid, String text) {
+    AnswerCallbackQuery answer = new AnswerCallbackQuery();
+    answer.setCallbackQueryId(qid);
+    answer.setText(text);
+
+    try {
+      return execute(answer); // Call method to send the message
     } catch (TelegramApiException e) {
       log.error("[sendDocs -> execute()]", e);
     }
