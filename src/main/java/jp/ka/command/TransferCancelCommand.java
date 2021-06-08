@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 @Component
-public class TransferCancelCommand extends Command {
+public class TransferCancelCommand implements Command {
 
   @Autowired
   private Receiver receiver;
@@ -18,9 +18,9 @@ public class TransferCancelCommand extends Command {
 
     if (U2.transferIds.size() > 0) {
       U2.transferIds.clear();
-      receiver.sendMsg(gid, "*队列已清空*", "md", -1);
+      receiver.sendMsg(gid, "*队列已清空*", "md");
     } else {
-      receiver.sendMsg(gid, "*队列没有任务*", "md", -1);
+      receiver.sendMsg(gid, "*队列没有任务*", "md");
     }
   }
 

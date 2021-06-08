@@ -117,7 +117,7 @@ public class HttpUtils implements ApplicationListener<ContextRefreshedEvent> {
       return sslsf;
     } catch (GeneralSecurityException e) {
       log.error("[createSSLConnSocketFactory Exception]", e);
-      applicationContext.getBean(Receiver.class).sendMsg(Config.uid, Text.REQUEST_ERROR, "md", -1);
+      applicationContext.getBean(Receiver.class).sendMsg(Config.uid, Text.REQUEST_ERROR, "md");
       throw new HttpException(501, e.getMessage());
     }
   }
@@ -141,17 +141,17 @@ public class HttpUtils implements ApplicationListener<ContextRefreshedEvent> {
       // log.info("[Http Response Body <"+ code +"> <"+ request.getURI() +">]\n\n{}\n", new String(result));
       if (Objects.nonNull(html) && !html.getIs()) log.info("[Http Response Body <"+ code +"> <"+ request.getURI() +">]\n\n{}\n", new String(result));
       if (code >= 400 && code < 500) {
-        applicationContext.getBean(Receiver.class).sendMsg(gid, Text.NOT_FOUND, "md", -1);
+        applicationContext.getBean(Receiver.class).sendMsg(gid, Text.NOT_FOUND, "md");
         throw new HttpException(code, result.toString());
       }
       if (code >= 500) {
-        applicationContext.getBean(Receiver.class).sendMsg(gid, Text.U2_SERVER_ERROR, "md", -1);
+        applicationContext.getBean(Receiver.class).sendMsg(gid, Text.U2_SERVER_ERROR, "md");
         throw new HttpException(code, result.toString());
       }
       return new Response(response, code, result, html);
     } catch (IOException e) {
       log.error("[Request Exception "+ request.getURI() +"]", e);
-      applicationContext.getBean(Receiver.class).sendMsg(gid, Text.REQUEST_ERROR, "md", -1);
+      applicationContext.getBean(Receiver.class).sendMsg(gid, Text.REQUEST_ERROR, "md");
       throw new HttpException(502, e.getMessage());
     } finally {
       request.releaseConnection();
@@ -216,14 +216,15 @@ public class HttpUtils implements ApplicationListener<ContextRefreshedEvent> {
     if (result.length == 0) return null;
     Document html = Jsoup.parse(new String(result), "UTF-8");
     Elements title = html.getElementsByTag("title");
-    if (title.size() == 0) return new ParseHTML(false, null);
+    Elements script = html.getElementsByTag("script");
+    if (title.size() == 0 && script.size() == 0) return new ParseHTML(false, null);
     else return new ParseHTML(true, html);
   }
 
   private static void isLogin(Document html) throws HttpException {
     Element title = html.getElementsByTag("title").get(0);
     if (title.text().equals("Access Point :: U2")) {
-      applicationContext.getBean(Receiver.class).sendMsg(Config.uid, Text.LOGIN_EXPIRE, "md", -1);
+      applicationContext.getBean(Receiver.class).sendMsg(Config.uid, Text.LOGIN_EXPIRE, "md");
       Config.uid = null;
       Config.step = null;
       Config.session.clear();

@@ -19,7 +19,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 @Component
-public class TransferCommand extends Command {
+public class TransferCommand implements Command {
 
   @Autowired
   private Receiver receiver;
@@ -31,7 +31,7 @@ public class TransferCommand extends Command {
 
     String[] split = msg.getText().split("\n");
     if (split.length < 3 || split.length > 4) {
-      receiver.sendMsg(gid, Text.COMMAND_ERROR + copyWriting(), "md", -1);
+      receiver.sendMsg(gid, Text.COMMAND_ERROR + copyWriting(), "md");
       return;
     }
 
@@ -40,12 +40,12 @@ public class TransferCommand extends Command {
     String message = "";
     if (split.length == 4) message = split[3].trim();
 
-    receiver.sendMsg(gid, Text.WAITING, "md", -1);
+    receiver.sendMsg(gid, Text.WAITING, "md");
     boolean firstTransfer = false;
     if (!U2.transferMark) {
       firstTransfer = transferCoin(gid, U2.transferIds.remove(0), split[2].trim(), message);
     } else {
-      receiver.sendMsg(gid, "*追加任务成功*", "md", -1);
+      receiver.sendMsg(gid, "*追加任务成功*", "md");
     }
     if (firstTransfer) {
       U2.transferMark = true;
@@ -84,9 +84,9 @@ public class TransferCommand extends Command {
       if (resp.getCode() == 200) {
         Element embedded = resp.getHtml().getElementsByClass("embedded").get(1);
         Element text = embedded.getElementsByClass("text").get(0);
-        receiver.sendMsg(gid, String.format("*%s*", text.text()), "md", -1);
+        receiver.sendMsg(gid, String.format("*%s*", text.text()), "md");
       } else if (resp.getCode() == 302) {
-        receiver.sendMsg(gid, String.format("*[%s] 转账成功*", recvID), "md", -1);
+        receiver.sendMsg(gid, String.format("*[%s] 转账成功*", recvID), "md");
       }
       return true;
     } catch (HttpException e) { }

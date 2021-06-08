@@ -18,7 +18,7 @@ import java.io.InputStream;
 
 @Slf4j
 @Component
-public class CaptchaCommand extends Command {
+public class CaptchaCommand implements Command {
 
   @Autowired
   private Receiver receiver;
@@ -28,10 +28,10 @@ public class CaptchaCommand extends Command {
     Message msg = update.getMessage();
     Long gid = msg.getChatId();
 
-    receiver.sendMsg(gid, Text.WAITING, "md", -1);
+    receiver.sendMsg(gid, Text.WAITING, "md");
     try {
-      InputStream resp = HttpUtils.getPic(gid, "/captcha.php?sid=" + Math.random());
-      receiver.sendDocs(gid, "captcha code", new InputFile().setMedia(resp, "captcha"));
+      InputStream pic = HttpUtils.getPic(gid, "/captcha.php?sid=" + Math.random());
+      receiver.sendDoc(gid, "登陆验证码", new InputFile().setMedia(pic, "captcha.png"));
       Config.step = CMD.CAPTCHA;
     } catch (HttpException e) { }
   }

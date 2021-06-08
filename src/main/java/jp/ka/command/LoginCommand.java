@@ -27,7 +27,7 @@ import java.util.Objects;
 
 @Slf4j
 @Component
-public class LoginCommand extends Command {
+public class LoginCommand implements Command {
 
   @Autowired
   private Receiver receiver;
@@ -39,18 +39,18 @@ public class LoginCommand extends Command {
     Integer mid = msg.getMessageId();
 
     if (Objects.isNull(Config.step) || !Config.step.equals(CMD.CAPTCHA)) {
-      receiver.sendMsg(gid, "*登陆前请先获取验证码*", "md", -1);
+      receiver.sendMsg(gid, "*登陆前请先获取验证码*", "md");
       return;
     }
 
     String[] split = msg.getText().split("\n");
     if (split.length != 4) {
-      receiver.sendMsg(gid, Text.COMMAND_ERROR + copyWriting(), "md", -1);
+      receiver.sendMsg(gid, Text.COMMAND_ERROR + copyWriting(), "md");
       return;
     }
 
     receiver.delMsg(gid, mid);
-    receiver.sendMsg(gid, Text.WAITING, "md", -1);
+    receiver.sendMsg(gid, Text.WAITING, "md");
     try {
       ArrayList<NameValuePair> params = new ArrayList<>();
       params.add(new BasicNameValuePair("login_type", "email"));
@@ -74,17 +74,13 @@ public class LoginCommand extends Command {
           default:
             errMsg = resp.getData().get("message");
         }
-        receiver.sendMsg(gid, String.format("*登陆失败:* `%s`", errMsg), "md", -1);
+        receiver.sendMsg(gid, String.format("*登陆失败:* `%s`", errMsg), "md");
         return;
       }
       Config.uid = msg.getFrom().getId();
       Config.step = null;
-      String tmpMsg = "*登陆成功，个人信息获取失败*";
-      if (ToolsCommand.setUserData(gid)) {
-        tmpMsg = String.format("*登陆成功！*\n\n__UID__: `%s`\n__用户名__: `%s`\n__分享率__: `%s`\n__上传量__: `%s`\n__下载量__: `%s`\n__UCoin__: `%s/%s/%s`\n__邀请__: `%s`\n__客户端__: `%s`\n__上传__: `%s`\n__下载__: `%s`",
-            U2.uid, U2.username, U2.shareRate, U2.uploads, U2.downloads, U2.coinGold, U2.coinSilver, U2.coinCopper, U2.invite, U2.client, U2.uploading, U2.downloading);
-      }
-      receiver.sendMsg(gid, tmpMsg, "md", -1);
+      receiver.sendMsg(gid, "*登陆成功*", "md");
+      ToolsCommand.setUserData(gid);
     } catch (HttpException e) { }
   }
 

@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 @Component
-public class LogoutCommand extends Command {
+public class LogoutCommand implements Command {
 
   @Autowired
   private Receiver receiver;
@@ -20,11 +20,11 @@ public class LogoutCommand extends Command {
   public void execute(Update update) {
     Long gid = update.getMessage().getChatId();
 
-    receiver.sendMsg(gid, Text.WAITING, "md", -1);
+    receiver.sendMsg(gid, Text.WAITING, "md");
     try {
       Config.session.clear();
       HttpUtils.get(gid, "/logout.php?key=" + U2.pageKey);
-      receiver.sendMsg(gid, "*登出成功！*", "md", -1);
+      receiver.sendMsg(gid, "*登出成功！*", "md");
     } catch (HttpException e) { }
   }
 

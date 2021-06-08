@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class TransferDeleteCommand extends Command {
+public class TransferDeleteCommand implements Command {
 
   @Autowired
   private Receiver receiver;
@@ -22,7 +22,7 @@ public class TransferDeleteCommand extends Command {
 
     String[] split = update.getMessage().getText().split("\n");
     if (split.length != 2) {
-      receiver.sendMsg(gid, Text.COMMAND_ERROR + copyWriting(), "md", -1);
+      receiver.sendMsg(gid, Text.COMMAND_ERROR + copyWriting(), "md");
     }
 
     List<String> tmpList = new ArrayList<>();
@@ -40,7 +40,7 @@ public class TransferDeleteCommand extends Command {
     } else {
       tmpMsg = String.format("*已删除 UID*\n\n`%s`", String.join("\n", tmpList));
     }
-    receiver.sendMsg(gid, tmpMsg, "md", -1);
+    receiver.sendMsg(gid, tmpMsg, "md");
   }
 
   @Override
