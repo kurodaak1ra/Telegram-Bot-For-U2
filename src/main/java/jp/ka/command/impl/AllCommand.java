@@ -29,7 +29,7 @@ public class AllCommand implements Command {
       if (Objects.isNull(command)) continue;
       builder.append("/").append(cmd.name().toLowerCase()).append(" - ").append(command.description()).append("\n");
     }
-    receiver.sendMsg(gid, builder.toString(), "");
+    receiver.sendMsg(gid, "", builder.toString(), null);
   }
 
   @Override
