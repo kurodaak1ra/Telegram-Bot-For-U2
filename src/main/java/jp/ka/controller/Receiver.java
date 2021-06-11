@@ -1,6 +1,7 @@
 package jp.ka.controller;
 
 import jp.ka.config.Config;
+import jp.ka.utils.CommonUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -11,13 +12,12 @@ import org.telegram.telegrambots.meta.api.methods.groupadministration.LeaveChat;
 import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
-import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.*;
 import org.telegram.telegrambots.meta.api.objects.*;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.media.InputMedia;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
-import java.util.Arrays;
-import java.util.Objects;
+import java.util.*;
 
 @Slf4j
 @Component
@@ -73,7 +73,7 @@ public class Receiver extends TelegramLongPollingBot {
       Long uid = msg.getFrom().getId();
       if (!gid.equals(uid)) return;
       if (Objects.nonNull(Config.uid) && !uid.equals(Config.uid)) {
-        sendMsg(gid, "无权操作", "md");
+        sendMsg(gid, "md", "无权操作", null);
         return;
       }
       commandResolver.executeCommand(update);
@@ -90,12 +90,12 @@ public class Receiver extends TelegramLongPollingBot {
     return opt;
   }
 
-  public Message sendMsg(Long gid, String text, String parse) {
+  public Message sendMsg(Long gid, String parse, String text, List<List<List<List<String>>>> columns) {
     SendMessage message = new SendMessage(); // Create a SendMessage object with mandatory fields
     message.setChatId(gid.toString());
     message.setText(text);
+    if (Objects.nonNull(columns)) message.setReplyMarkup(CommonUtils.createMarkup(columns));
     if (!parse.equals("")) message.setParseMode(parse.equals("md") ? "MarkdownV2" : "HTML");
-    // if (reply.longValue() > 0) message.setReplyToMessageId(reply);
 
     try {
       return execute(message); // Call method to send the message
@@ -104,6 +104,35 @@ public class Receiver extends TelegramLongPollingBot {
     }
 
     return null;
+  }
+
+  public void sendEditMsg(Long gid, Integer mid, String parse, String text, List<List<List<List<String>>>> columns) {
+    EditMessageText message = new EditMessageText();
+    message.setChatId(gid.toString());
+    message.setMessageId(mid);
+    message.setText(text);
+    if (Objects.nonNull(columns))  message.setReplyMarkup(CommonUtils.createMarkup(columns));
+    if (!parse.equals("")) message.setParseMode(parse.equals("md") ? "MarkdownV2" : "HTML");
+
+    try {
+      execute(message); // Call method to send the message
+    } catch (TelegramApiException e) {
+      log.error("[sendEditMsg -> execute()]", e);
+    }
+  }
+
+  public void sendEditMedia(Long gid, Integer mid, InputMedia file, List<List<List<List<String>>>> columns) {
+    EditMessageMedia media = new EditMessageMedia();
+    media.setChatId(gid.toString());
+    media.setMessageId(mid);
+    media.setMedia(file);
+    if (Objects.nonNull(columns)) media.setReplyMarkup(CommonUtils.createMarkup(columns));
+
+    try {
+      execute(media); // Call method to send the message
+    } catch (TelegramApiException e) {
+      log.error("[sendEditMedia -> execute()]", e);
+    }
   }
 
   public Message sendDoc(Long gid, String caption, InputFile file) {
@@ -121,15 +150,11 @@ public class Receiver extends TelegramLongPollingBot {
     return null;
   }
 
-  public Message sendImg(Long gid, String caption, InputFile img, InlineKeyboardMarkup btns) {
+  public Message sendImg(Long gid, String caption, InputFile img, List<List<List<List<String>>>> columns) {
     SendPhoto photo = new SendPhoto();
     photo.setChatId(gid.toString());
     if (!caption.equals("")) photo.setCaption(caption);
-    if (Objects.nonNull(btns)) {
-      photo.setReplyMarkup(btns);
-      // photo.setAllowSendingWithoutReply(true);
-    }
-
+    if (Objects.nonNull(columns)) photo.setReplyMarkup(CommonUtils.createMarkup(columns));
     photo.setPhoto(img);
 
     try {
@@ -141,21 +166,22 @@ public class Receiver extends TelegramLongPollingBot {
     return null;
   }
 
-  public Boolean sendCallbackAnswer(String qid, String text) {
+  public Boolean sendCallbackAnswer(String qid, boolean alert, String text) {
     AnswerCallbackQuery answer = new AnswerCallbackQuery();
     answer.setCallbackQueryId(qid);
-    answer.setText(text);
+    answer.setText(text); // 限制 200 字符
+    answer.setShowAlert(alert);
 
     try {
       return execute(answer); // Call method to send the message
     } catch (TelegramApiException e) {
-      log.error("[sendDocs -> execute()]", e);
+      log.error("[sendCallbackAnswer -> execute()]", e);
     }
 
     return null;
   }
 
-  public Boolean delMsg(Long gid, Integer mid) {
+  public Boolean sendDel(Long gid, Integer mid) {
     DeleteMessage del = new DeleteMessage();
     del.setChatId(gid.toString());
     del.setMessageId(mid);
@@ -163,7 +189,7 @@ public class Receiver extends TelegramLongPollingBot {
     try {
       return execute(del); // Call method to send the message
     } catch (TelegramApiException e) {
-      log.error("[sendDocs -> execute()]", e);
+      log.error("[sendDel -> execute()]", e);
     }
 
     return null;

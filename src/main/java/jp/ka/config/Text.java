@@ -14,4 +14,8 @@ public class Text {
 
   public static final String LOGIN_EXPIRE = "*登陆信息过期，请重新登录*";
 
+  public static final String CALLBACK_EXPIRE = "已过期，请重新获取";
+  public static final String CALLBACK_WAITING = "正在操作，请稍等...";
+  public static final String CALLBACK_REFRESH = "正在刷新，请稍等...";
+
 }

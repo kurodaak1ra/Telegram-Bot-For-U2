@@ -1,7 +1,7 @@
 package jp.ka.config;
 
 import jp.ka.command.Command;
-import jp.ka.command.impl.ToolsCommand;
+import jp.ka.command.CommandTools;
 import jp.ka.controller.CallbackResolver;
 import jp.ka.controller.CommandResolver;
 import jp.ka.utils.Store;
@@ -25,6 +25,12 @@ public class Config implements CommandLineRunner, ApplicationListener<ContextRef
   @Value("${user.id}")
   public void setUID(Long uid) {
     this.uid = uid;
+  }
+
+  public static String U2Domain;
+  @Value("${u2.domain}")
+  public void setDomain(String domain) {
+    this.U2Domain = domain;
   }
 
   public static String cookieKey;
@@ -51,7 +57,7 @@ public class Config implements CommandLineRunner, ApplicationListener<ContextRef
         System.exit(0);
       }
       Config.session.put(cookieKey, cookieValue);
-      new ToolsCommand().setUserData(uid);
+      new CommandTools().setUserData(uid);
     }
     log.info("[Inject Cookie] {}", Config.session);
   }

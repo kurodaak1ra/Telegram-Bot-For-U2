@@ -4,6 +4,8 @@ import jp.ka.bean.Redis;
 import org.springframework.stereotype.Component;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -34,9 +36,7 @@ public class RedisUtils {
    */
   private boolean setCloneValue(String key, Object value, int expireTime) {
     try {
-      if (cache.size() >= MAX_CAPACITY) {
-        return false;
-      }
+      if (cache.size() >= MAX_CAPACITY) return false;
       // 序列化赋值
       Redis entityClone = clone(new Redis(value, System.nanoTime(), expireTime));
       cache.put(key, entityClone);
@@ -77,8 +77,84 @@ public class RedisUtils {
   public Object get(String key) {
     Redis item = cache.get(key);
     if (Objects.isNull(item)) return null;
-    if (isExpire(item)) cache.remove(key);
+    if (isExpire(item)) {
+      cache.remove(key);
+      return null;
+    }
     return item.getValue();
+  }
+
+  public boolean del(String key) {
+    Redis remove = cache.remove(key);
+    if (Objects.isNull(remove)) return false;
+    else return true;
+  }
+
+  public boolean expired(String key, int expireTime) {
+    Redis item = cache.get(key);
+    if (Objects.isNull(item)) return false;
+    // cache.remove(key);
+    return setCloneValue(key, item.getValue(), expireTime);
+  }
+
+  public void lpush(String key, Object value, int expireTime) {
+    Redis item = cache.get(key);
+    if (Objects.isNull(item)) {
+      List<Object> tmp = new ArrayList<>();
+      tmp.add(value);
+      setCloneValue(key, tmp, expireTime);
+    } else {
+      // cache.remove(key);
+      List<Object> tmp = (List<Object>) item.getValue();
+      tmp.add(value);
+      setCloneValue(key, tmp, item.getExpireTime());
+    }
+  }
+
+  public Object lpop(String key) {
+    Redis item = cache.get(key);
+    if (Objects.isNull(item)) return null;
+    // cache.remove(key);
+    List<Object> tmp = (List<Object>) item.getValue();
+    if (tmp.size() == 0) return null;
+    Object rm = tmp.remove(tmp.size() - 1);
+    setCloneValue(key, tmp, item.getExpireTime());
+    return rm;
+  }
+
+  public void lshift(String key, Object value, int expireTime) {
+    Redis item = cache.get(key);
+    if (Objects.isNull(item)) {
+      List<Object> tmp = new ArrayList<>();
+      tmp.add(value);
+      setCloneValue(key, tmp, expireTime);
+    } else {
+      // cache.remove(key);
+      List<Object> tmp = (List<Object>) item.getValue();
+      tmp.add(0, value);
+      setCloneValue(key, tmp, item.getExpireTime());
+    }
+  }
+
+  public Object lunshift(String key) {
+    Redis item = cache.get(key);
+    if (Objects.isNull(item)) return null;
+    // cache.remove(key);
+    List<Object> tmp = (List<Object>) item.getValue();
+    if (tmp.size() == 0) return null;
+    Object rm = tmp.remove(0);
+    setCloneValue(key, tmp, item.getExpireTime());
+    return rm;
+  }
+
+  public Boolean lremove(String key, Object value) {
+    Redis item = cache.get(key);
+    if (Objects.isNull(item)) return null;
+    // cache.remove(key);
+    List<Object> tmp = (List<Object>) item.getValue();
+    boolean rm = tmp.remove(value);
+    setCloneValue(key, tmp, item.getExpireTime());
+    return rm;
   }
 
   public void clear() {
@@ -86,6 +162,7 @@ public class RedisUtils {
   }
 
   private static boolean isExpire(Redis item) {
+    if (item.getExpireTime() == -1) return false;
     long timoutTime = TimeUnit.NANOSECONDS.toSeconds(System.nanoTime() - item.getModifyTime());
     if (item.getExpireTime() > timoutTime) return false;
     return true;

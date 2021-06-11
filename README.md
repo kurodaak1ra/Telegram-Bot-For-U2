@@ -8,15 +8,6 @@
 3. 自行 @BotFather 申请注册一个属于自己的 TelegramBot，并设置 Bot 的 command 为
 ```
 all - 全部指令
-captcha - 登陆验证码
-login - 登陆
-logout - 登出
-me - 当前用户
-transfer - 金币转账
-transfer_info - 当前转账队列
-transfer_delete - 删除队列中一个或多个 UID
-transfer_cancel - 取消转账队列
-sign - 签到
 ```
 
 ### 环境搭建
@@ -47,6 +38,12 @@ OpenJDK 64-Bit Server VM (build 25.292-b10, mixed mode)
 [root@centos ~]# systemctl daemon-reload
 [root@centos ~]# systemctl enable u2-bot
 [root@centos ~]# systemctl start u2-bot
+```
+
+### 非服务器部署，即开即用
+(你要上的去 Google 才行
+```shell
+[root@centos ~]# java -jar telegram-bot-for-u2-0.0.1-SNAPSHOT.jar --bot.username={xxxxx} --bot.token={xxxxx}
 ```
 
 ### 常见问题

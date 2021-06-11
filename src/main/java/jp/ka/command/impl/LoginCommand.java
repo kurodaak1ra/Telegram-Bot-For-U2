@@ -1,6 +1,7 @@
 package jp.ka.command.impl;
 
 import jp.ka.command.Command;
+import jp.ka.command.CommandTools;
 import jp.ka.config.Config;
 import jp.ka.config.Text;
 import jp.ka.controller.Receiver;
@@ -32,18 +33,18 @@ public class LoginCommand implements Command {
     Integer mid = msg.getMessageId();
 
     if (Objects.isNull(Config.step) || !Config.step.equals(CMD.CAPTCHA)) {
-      receiver.sendMsg(gid, "*登陆前请先获取验证码*", "md");
+      receiver.sendMsg(gid, "md", "*登陆前请先获取验证码*", null);
       return;
     }
 
     String[] split = msg.getText().split("\n");
     if (split.length != 4) {
-      receiver.sendMsg(gid, Text.COMMAND_ERROR + copyWriting(), "md");
+      receiver.sendMsg(gid, "md", Text.COMMAND_ERROR + copyWriting(), null);
       return;
     }
 
-    receiver.delMsg(gid, mid);
-    receiver.sendMsg(gid, Text.WAITING, "md");
+    receiver.sendDel(gid, mid);
+    receiver.sendMsg(gid, "md", Text.WAITING, null);
     try {
       ArrayList<NameValuePair> params = new ArrayList<>();
       params.add(new BasicNameValuePair("login_type", "email"));
@@ -67,13 +68,13 @@ public class LoginCommand implements Command {
           default:
             errMsg = resp.getData().get("message");
         }
-        receiver.sendMsg(gid, String.format("*登陆失败:* `%s`", errMsg), "md");
+        receiver.sendMsg(gid, "md", String.format("*登陆失败:* `%s`", errMsg), null);
         return;
       }
       Config.uid = msg.getFrom().getId();
       Config.step = null;
-      receiver.sendMsg(gid, "*登陆成功*", "md");
-      ToolsCommand.setUserData(gid);
+      receiver.sendMsg(gid, "md", "*登陆成功*", null);
+      CommandTools.setUserData(gid);
     } catch (HttpException e) { }
   }
 

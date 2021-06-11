@@ -4,15 +4,22 @@ import jp.ka.command.Command;
 import jp.ka.config.Text;
 import jp.ka.config.U2;
 import jp.ka.controller.Receiver;
+import jp.ka.utils.RedisUtils;
+import jp.ka.utils.Store;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Component
 public class TransferDeleteCommand implements Command {
+
+  @Autowired
+  private RedisUtils redis;
 
   @Autowired
   private Receiver receiver;
@@ -23,16 +30,15 @@ public class TransferDeleteCommand implements Command {
 
     String[] split = update.getMessage().getText().split("\n");
     if (split.length != 2) {
-      receiver.sendMsg(gid, Text.COMMAND_ERROR + copyWriting(), "md");
+      receiver.sendMsg(gid, "md", Text.COMMAND_ERROR + copyWriting(), null);
+      return;
     }
 
+    receiver.sendMsg(gid, "md", Text.WAITING, null);
     List<String> tmpList = new ArrayList<>();
     for (String uid : split[1].split(" ")) {
-      try {
-        Integer id = new Integer(uid);
-        boolean remove = U2.transferIds.remove(id);
-        if (remove) tmpList.add(uid);
-      } catch (NumberFormatException e) {}
+      Boolean rm = redis.lremove(Store.TRANSFER_DATA_KEY, uid);
+      if (Objects.nonNull(rm) && rm) tmpList.add(uid);
     }
 
     String tmpMsg = "";
@@ -41,7 +47,7 @@ public class TransferDeleteCommand implements Command {
     } else {
       tmpMsg = String.format("*已删除 UID*\n\n`%s`", String.join("\n", tmpList));
     }
-    receiver.sendMsg(gid, tmpMsg, "md");
+    receiver.sendMsg(gid, "md", tmpMsg, null);
   }
 
   @Override

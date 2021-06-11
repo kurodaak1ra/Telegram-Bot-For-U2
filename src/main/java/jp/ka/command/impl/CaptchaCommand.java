@@ -27,7 +27,7 @@ public class CaptchaCommand implements Command {
     Message msg = update.getMessage();
     Long gid = msg.getChatId();
 
-    receiver.sendMsg(gid, Text.WAITING, "md");
+    receiver.sendMsg(gid, "md", Text.WAITING, null);
     try {
       InputStream pic = HttpUtils.getPic(gid, "/captcha.php?sid=" + Math.random());
       receiver.sendDoc(gid, "登陆验证码", new InputFile().setMedia(pic, "captcha.png"));

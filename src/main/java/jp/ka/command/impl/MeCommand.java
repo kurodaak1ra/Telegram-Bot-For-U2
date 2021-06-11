@@ -1,6 +1,7 @@
 package jp.ka.command.impl;
 
 import jp.ka.command.Command;
+import jp.ka.command.CommandTools;
 import jp.ka.config.Text;
 import jp.ka.controller.Receiver;
 import lombok.extern.slf4j.Slf4j;
@@ -21,8 +22,8 @@ public class MeCommand implements Command {
     Message msg = update.getMessage();
     Long gid = msg.getChatId();
 
-    receiver.sendMsg(gid, Text.WAITING, "md");
-    ToolsCommand.setUserData(gid);
+    receiver.sendMsg(gid, "md", Text.WAITING, null);
+    CommandTools.setUserData(gid);
   }
 
   @Override

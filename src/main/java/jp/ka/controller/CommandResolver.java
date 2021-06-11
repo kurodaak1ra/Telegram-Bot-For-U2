@@ -42,7 +42,7 @@ public class CommandResolver {
 
       String errMsg = "*请登陆*";
       if (hasCookie) errMsg = "*您已登陆*";
-      Store.context.getBean(Receiver.class).sendMsg(update.getMessage().getChatId(), errMsg, "md");
+      Store.context.getBean(Receiver.class).sendMsg(update.getMessage().getChatId(), "md", errMsg, null);
     }
   }
 

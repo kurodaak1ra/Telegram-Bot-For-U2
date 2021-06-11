@@ -9,6 +9,7 @@ import jp.ka.exception.HttpException;
 import jp.ka.utils.HttpUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 @Component
@@ -21,11 +22,11 @@ public class LogoutCommand implements Command {
   public void execute(Update update) {
     Long gid = update.getMessage().getChatId();
 
-    receiver.sendMsg(gid, Text.WAITING, "md");
+    receiver.sendMsg(gid, "md", Text.WAITING, null);
     try {
       Config.session.clear();
       HttpUtils.get(gid, "/logout.php?key=" + U2.pageKey);
-      receiver.sendMsg(gid, "*登出成功！*", "md");
+      receiver.sendMsg(gid, "md", "*登出成功！*", null);
     } catch (HttpException e) { }
   }
 

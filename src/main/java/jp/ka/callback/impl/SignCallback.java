@@ -1,11 +1,15 @@
 package jp.ka.callback.impl;
 
 import jp.ka.callback.Callback;
+import jp.ka.callback.CallbackTools;
+import jp.ka.command.impl.SignCommand;
+import jp.ka.config.Text;
 import jp.ka.controller.Receiver;
 import jp.ka.exception.HttpException;
 import jp.ka.utils.HttpUtils;
 import jp.ka.utils.RedisUtils;
 import jp.ka.bean.RespGet;
+import jp.ka.utils.Store;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 import org.jsoup.nodes.Element;
@@ -32,17 +36,44 @@ public class SignCallback implements Callback {
   public void execute(Update update) {
     CallbackQuery query = update.getCallbackQuery();
     Long gid = query.getMessage().getChatId();
-    Object form = redis.get(query.getData().split(":")[1]);
 
-    receiver.delMsg(gid, query.getMessage().getMessageId());
-    if (Objects.isNull(form)) {
-      receiver.sendCallbackAnswer(query.getId(), "签到已过期，请重新获取");
+    Map<String, Object> cache = CallbackTools.hasExpired(gid, query);
+    if (Objects.isNull(cache)) return;
+
+    String mark = (String) cache.get("mark");
+    String cacheMark = (String) redis.get(Store.SIGN_MESSAGE_MARK_KEY);
+    if (!mark.equals(cacheMark)) {
+      receiver.sendDel(gid, query.getMessage().getMessageId());
+      receiver.sendCallbackAnswer(query.getId(), false, Text.CALLBACK_EXPIRE);
       return;
     }
-    receiver.sendCallbackAnswer(query.getId(), "正在提交，请稍等");
+
+    String source = (String) cache.get("source");
+    switch (source) {
+      case "item": {
+        receiver.sendDel(gid, query.getMessage().getMessageId());
+        receiver.sendCallbackAnswer(query.getId(), false, Text.CALLBACK_WAITING);
+        Map<String, String> data = (Map<String, String>) cache.get("data");
+        item(gid, data);
+        break;
+      }
+      case "refresh": {
+        receiver.sendCallbackAnswer(query.getId(), false, Text.CALLBACK_REFRESH);
+        refresh(gid);
+        break;
+      }
+    }
+  }
+
+  @Override
+  public CBK cbk() {
+    return CBK.SIGN;
+  }
+
+  private void item(Long gid, Map<String, String> data) {
     try {
       ArrayList<NameValuePair> params = new ArrayList<>();
-      for (Map.Entry<String, String> entry : ((Map<String, String>) form).entrySet()) {
+      for (Map.Entry<String, String> entry : data.entrySet()) {
         params.add(new BasicNameValuePair(entry.getKey(), entry.getValue()));
       }
       HttpUtils.postForm(gid, "/showup.php?action=show", params);
@@ -57,13 +88,12 @@ public class SignCallback implements Callback {
       String res = td.get(2).getElementsByTag("fieldset").get(0).getElementsByTag("span").get(0).text().replaceAll("\\(", "").replaceAll("\\)", "").substring(0, 4);
       String uc = td.get(1).getElementsByTag("b").get(3).text();
 
-      receiver.sendMsg(gid, String.format("*%s*\n*奖励UCoin*: `%s`", res, uc), "md");
+      receiver.sendMsg(gid, "md", String.format("*%s*\n*奖励UCoin*: `%s`", res, uc), null);
     } catch (HttpException e) { }
   }
 
-  @Override
-  public CBK cbk() {
-    return CBK.SIGN;
+  private void refresh(Long gid) {
+    Store.context.getBean(SignCommand.class).sendSign(gid);
   }
 
 }

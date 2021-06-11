@@ -57,12 +57,6 @@ public class HttpUtils implements ApplicationListener<ContextRefreshedEvent> {
 
   private static ApplicationContext applicationContext;
 
-  private static String U2Domain;
-  @Value("${u2.domain}")
-  public void setDomain(String domain) {
-    this.U2Domain = domain;
-  }
-
   private static final String UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36";
 
   private static PoolingHttpClientConnectionManager connMgr;
@@ -94,7 +88,7 @@ public class HttpUtils implements ApplicationListener<ContextRefreshedEvent> {
   }
 
   // 创建SSL安全连接
-  private static SSLConnectionSocketFactory createSSLConnSocketFactory() throws HttpException {
+  private static SSLConnectionSocketFactory createSSLConnSocketFactory(Long gid) throws HttpException {
     try {
       SSLContext sslContext = new SSLContextBuilder().loadTrustMaterial(null, new TrustStrategy() {
         public boolean isTrusted(X509Certificate[] chain, String authType) throws CertificateException {
@@ -119,13 +113,13 @@ public class HttpUtils implements ApplicationListener<ContextRefreshedEvent> {
       return sslsf;
     } catch (GeneralSecurityException e) {
       log.error("[createSSLConnSocketFactory Exception]", e);
-      applicationContext.getBean(Receiver.class).sendMsg(Config.uid, Text.REQUEST_ERROR, "md");
+      applicationContext.getBean(Receiver.class).sendMsg(gid, "md", Text.REQUEST_ERROR, null);
       throw new HttpException(501, e.getMessage());
     }
   }
 
   private static Response req(Long gid, HttpRequestBase request) throws HttpException {
-    CloseableHttpClient cli = HttpClients.custom().setSSLSocketFactory(createSSLConnSocketFactory()).setConnectionManager(connMgr).setDefaultRequestConfig(requestConfig).build();
+    CloseableHttpClient cli = HttpClients.custom().setSSLSocketFactory(createSSLConnSocketFactory(gid)).setConnectionManager(connMgr).setDefaultRequestConfig(requestConfig).build();
     HttpClientContext context = HttpClientContext.create();
 
     try {
@@ -139,21 +133,21 @@ public class HttpUtils implements ApplicationListener<ContextRefreshedEvent> {
       log.info("[Session] {}", Config.session);
       log.info("[Http Response <"+ code +"> <"+ request.getURI() +">]\n\n{}\n", response);
       ParseHTML html = isHTML(result);
-      if (code == 200 && Objects.nonNull(html) && html.getIs()) isLogin(html.getHtml());
+      if (code == 200 && Objects.nonNull(html) && html.getIs()) isLogin(gid, html.getHtml());
       // log.info("[Http Response Body <"+ code +"> <"+ request.getURI() +">]\n\n{}\n", new String(result));
       if (Objects.nonNull(html) && !html.getIs()) log.info("[Http Response Body <"+ code +"> <"+ request.getURI() +">]\n\n{}\n", new String(result));
       if (code >= 400 && code < 500) {
-        applicationContext.getBean(Receiver.class).sendMsg(gid, Text.NOT_FOUND, "md");
+        applicationContext.getBean(Receiver.class).sendMsg(gid, "md", Text.NOT_FOUND, null);
         throw new HttpException(code, result.toString());
       }
       if (code >= 500) {
-        applicationContext.getBean(Receiver.class).sendMsg(gid, Text.U2_SERVER_ERROR, "md");
+        applicationContext.getBean(Receiver.class).sendMsg(gid, "md", Text.U2_SERVER_ERROR, null);
         throw new HttpException(code, result.toString());
       }
       return new Response(response, code, result, html);
     } catch (IOException e) {
       log.error("[Request Exception "+ request.getURI() +"]", e);
-      applicationContext.getBean(Receiver.class).sendMsg(gid, Text.REQUEST_ERROR, "md");
+      applicationContext.getBean(Receiver.class).sendMsg(gid, "md", Text.REQUEST_ERROR, null);
       throw new HttpException(502, e.getMessage());
     } finally {
       request.releaseConnection();
@@ -161,21 +155,21 @@ public class HttpUtils implements ApplicationListener<ContextRefreshedEvent> {
   }
 
   public static RespGet get(Long gid, String uri) throws HttpException {
-    HttpGet get = new HttpGet(U2Domain + uri);
+    HttpGet get = new HttpGet(Config.U2Domain + uri);
     get.addHeader("accept", "*/*");
     get.addHeader("user-agent", UA);
     if (!Config.session.isEmpty()) get.addHeader("cookie", cookieToString());
 
     Response resp = req(gid, get);
     if (Objects.nonNull(resp.getHtml())) {
-      isLogin(resp.html.getHtml());
+      isLogin(gid, resp.html.getHtml());
       if (resp.html.getIs()) return new RespGet(resp.getCode(), null, resp.html.getHtml());
     }
 
     return new RespGet(resp.getCode(), resp.getResult(), null);
   }
   public static InputStream getPic(Long gid, String uri) throws HttpException {
-    HttpGet get = new HttpGet(U2Domain + uri);
+    HttpGet get = new HttpGet(Config.U2Domain + uri);
     get.addHeader("accept", "*/*");
     get.addHeader("user-agent", UA);
     if (!Config.session.isEmpty()) get.addHeader("cookie", cookieToString());
@@ -184,7 +178,7 @@ public class HttpUtils implements ApplicationListener<ContextRefreshedEvent> {
   }
 
   private static RespPost post(Long gid, String uri, String mediaType, HttpEntity entity) throws HttpException {
-    HttpPost post = new HttpPost(U2Domain + uri);
+    HttpPost post = new HttpPost(Config.U2Domain + uri);
     post.addHeader("content-type", mediaType);
     post.addHeader("accept", "*/*");
     post.addHeader("user-agent", UA);
@@ -219,14 +213,15 @@ public class HttpUtils implements ApplicationListener<ContextRefreshedEvent> {
     Document html = Jsoup.parse(new String(result), "UTF-8");
     Elements title = html.getElementsByTag("title");
     Elements script = html.getElementsByTag("script");
-    if (title.size() == 0 && script.size() == 0) return new ParseHTML(false, null);
-    else return new ParseHTML(true, html);
+    if (title.size() != 0 || script.size() != 0) return new ParseHTML(true, html);
+    return new ParseHTML(false, null);
   }
 
-  private static void isLogin(Document html) throws HttpException {
-    Element title = html.getElementsByTag("title").get(0);
-    if (title.text().equals("Access Point :: U2")) {
-      applicationContext.getBean(Receiver.class).sendMsg(Config.uid, Text.LOGIN_EXPIRE, "md");
+  private static void isLogin(Long gid, Document html) throws HttpException {
+    Elements title = html.getElementsByTag("title");
+    if (title.size() == 0) return;
+    if (title.get(0).text().equals("Access Point :: U2")) {
+      applicationContext.getBean(Receiver.class).sendMsg(gid, "md", Text.LOGIN_EXPIRE, null);
       Config.uid = null;
       Config.step = null;
       Config.session.clear();
@@ -238,11 +233,8 @@ public class HttpUtils implements ApplicationListener<ContextRefreshedEvent> {
     String tmp = "";
 
     for (Map.Entry<String, String> entry : Config.session.entrySet()) {
-      if (tmp.equals("")) {
-        tmp += entry.getKey() + "=" + entry.getValue();
-      } else {
-        tmp += "; " + entry.getKey() + "=" + entry.getValue();
-      }
+      if (tmp.equals("")) tmp += entry.getKey() + "=" + entry.getValue();
+      else tmp += "; " + entry.getKey() + "=" + entry.getValue();
     }
 
     return tmp;

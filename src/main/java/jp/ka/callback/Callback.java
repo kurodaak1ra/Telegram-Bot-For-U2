@@ -8,7 +8,7 @@ public interface Callback {
   CBK cbk();
 
   enum CBK {
-    SIGN
+    SIGN, SEARCH, TORRENT_INFO, TORRENT_LINK
   }
 
 }
