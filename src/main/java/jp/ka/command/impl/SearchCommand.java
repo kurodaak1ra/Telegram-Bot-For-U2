@@ -201,7 +201,7 @@ public class SearchCommand implements Command {
       }
       return true;
     } catch (HttpException e) { }
-    return true;
+    return false;
   }
 
   public void sendSearch(Long gid, int page) {
