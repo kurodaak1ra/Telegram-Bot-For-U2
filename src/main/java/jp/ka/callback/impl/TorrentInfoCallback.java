@@ -48,9 +48,10 @@ public class TorrentInfoCallback implements Callback {
       case "close": {
         if (Objects.nonNull(torrentLinkMsgID)) {
           receiver.sendDel(gid, torrentLinkMsgID);
-          redis.del(Store.TORRENT_INFO_MESSAGE_ID_KEY);
+          redis.del(Store.TORRENT_LINK_MESSAGE_ID_KEY);
         }
         receiver.sendDel(gid, mid);
+        redis.del(Store.TORRENT_INFO_MESSAGE_ID_KEY);
         break;
       }
     }

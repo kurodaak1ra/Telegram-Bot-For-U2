@@ -17,6 +17,8 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.*;
 
 @Component
@@ -34,23 +36,28 @@ public class SearchCommand implements Command {
     Long gid = msg.getChatId();
 
     String[] split = msg.getText().split("\n");
-    if (split.length > 2) {
+    if (split[0].trim().contains(" ") || split.length > 2) {
       receiver.sendMsg(gid, "md", Text.COMMAND_ERROR + copyWriting(), null);
       return;
     }
 
     String keywords = "";
-    if (split.length > 1) keywords = split[1];
+    if (split.length > 1) keywords = split[1].trim();
     HashMap<String, Object> map = new HashMap<>();
     map.put("keywords", keywords);
     map.put("offset", 0);
     redis.set(Store.SEARCH_OPTIONS_KEY, map, Store.TTL);
     redis.set(Store.SEARCH_MARK_KEY, UUID.randomUUID().toString(), Store.TTL);
     redis.set(Store.SEARCH_DATA_KEY, new ArrayList<Map<String, String>>(), Store.TTL);
+    Integer searchMsgID = (Integer) redis.get(Store.SEARCH_MESSAGE_ID_KEY);
+    if (Objects.nonNull(searchMsgID)) {
+      receiver.sendDel(gid, searchMsgID);
+      redis.del(Store.SEARCH_MESSAGE_ID_KEY);
+    }
 
     receiver.sendMsg(gid, "md", Text.WAITING, null);
-    initData(gid);
-    sendSearch(gid, 0);
+    boolean flag = initData(gid);
+    if (flag) sendSearch(gid, 0);
   }
 
   @Override
@@ -93,14 +100,22 @@ public class SearchCommand implements Command {
     return str;
   }
 
-  public void initData(Long gid) {
+  public boolean initData(Long gid) {
     String mark = (String) redis.get(Store.SEARCH_MARK_KEY);
     Map<String, Object> options = (Map<String, Object>) redis.get(Store.SEARCH_OPTIONS_KEY);
-    if (Objects.isNull(mark) || Objects.isNull(options)) return;
+    if (Objects.isNull(mark) || Objects.isNull(options)) return false;
 
     try {
-      RespGet resp = HttpUtils.get(gid, "/torrents.php?page="+ options.get("offset") +"&search=" + options.get("keywords"));
-      Elements list = resp.getHtml().getElementsByClass("torrents").get(0).getElementsByTag("tr");
+      String keywords = null;
+      try {
+        keywords = URLEncoder.encode((String) options.get("keywords"), "UTF-8");
+      } catch (UnsupportedEncodingException e) { }
+      RespGet resp = HttpUtils.get(gid, "/torrents.php?page="+ options.get("offset") +"&search=" + keywords);
+      Elements torrents = resp.getHtml().getElementsByClass("torrents");
+      if (torrents.size() == 0) {
+        receiver.sendMsg(gid, "md", "*没有种子！ 请用准确的关键字重试*", null);
+        return false;
+      }
 
       Element pagination = resp.getHtml().getElementById("outer").children().get(0).children().get(0).children().get(0).children().get(0).child(1);
       Elements linkBtn = pagination.getElementsByTag("a");
@@ -117,6 +132,7 @@ public class SearchCommand implements Command {
       options.put("page_size", pageSize);
       redis.set(Store.SEARCH_OPTIONS_KEY, options, Store.TTL);
 
+      Elements list = torrents.get(0).getElementsByTag("tr");
       List<Map<String, String>> items = new ArrayList<>();
       for (int i = 1; i < list.size(); i+=3) {
         Element target = list.get(i);
@@ -124,8 +140,8 @@ public class SearchCommand implements Command {
         Element name = target.getElementsByClass("tooltip").get(0);
 
         Element status = new Element("html");
-        Elements statuss = target.getElementsByTag("table").get(0).getElementsByTag("tr").get(1).getElementsByTag("img");
-        if (statuss.size() > 0) status = statuss.get(0);
+        Elements statusImg = target.getElementsByTag("table").get(0).getElementsByTag("tr").get(1).getElementsByTag("img");
+        if (statusImg.size() > 0) status = statusImg.get(0);
         Element statusPromotionUpload = null;
         Element statusPromotionDownload = null;
         if (status.attr("alt").equals("Promotion")) {
@@ -183,7 +199,9 @@ public class SearchCommand implements Command {
         cacheItems.addAll(items);
         redis.set(Store.SEARCH_DATA_KEY, cacheItems, Store.TTL);
       }
+      return true;
     } catch (HttpException e) { }
+    return true;
   }
 
   public void sendSearch(Long gid, int page) {
