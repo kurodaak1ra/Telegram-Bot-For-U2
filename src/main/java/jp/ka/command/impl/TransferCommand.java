@@ -2,7 +2,6 @@ package jp.ka.command.impl;
 
 import jp.ka.command.Command;
 import jp.ka.config.Text;
-import jp.ka.config.U2;
 import jp.ka.controller.Receiver;
 import jp.ka.exception.HttpException;
 import jp.ka.utils.HttpUtils;
@@ -15,7 +14,6 @@ import org.jsoup.nodes.Element;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Message;
-import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.util.*;
 
@@ -40,17 +38,19 @@ public class TransferCommand implements Command {
       return;
     }
 
-    for (String id : split[1].trim().split(" ")) {
-      String tmpID = id.trim();
-      if (!tmpID.equals("")) redis.lpush(Store.TRANSFER_DATA_KEY, id, TTL);
+    String rids = split[1].trim();
+    String count = split[2].trim();
+    String message = Store.ADV;
+    if (split.length == 4) message = split[3].trim() + "\n\n" + message;
+
+    for (String rid : rids.split(" ")) {
+      if (!rid.trim().equals("")) redis.lpush(Store.TRANSFER_DATA_KEY, rid, TTL);
     }
-    String message = "";
-    if (split.length == 4) message = split[3].trim();
 
     receiver.sendMsg(gid, "md", Text.WAITING, null);
     Boolean mark = (Boolean) redis.get(Store.TRANSFER_MARK_KEY);
     if (Objects.isNull(mark) || !mark) {
-      queue(gid, split[2].trim(), message);
+      queue(gid, count, message);
       redis.set(Store.TRANSFER_MARK_KEY, true, TTL);
       transferCoin(gid, (String) redis.lunshift(Store.TRANSFER_DATA_KEY), split[2].trim(), message);
     } else receiver.sendMsg(gid, "md", "*追加任务成功*", null);
@@ -76,10 +76,10 @@ public class TransferCommand implements Command {
     return receiver.sendMsg(gid, "md", Text.COMMAND_ERROR + "\n\n`/transfer`\n`<uid - 可多个空格分隔>`\n`<count - 数量>`\n`<message - 留言 (可省略)>`", null);
   }
 
-  private void transferCoin(Long gid, String recvID, String amount, String message) {
+  private void transferCoin(Long gid, String rid, String amount, String message) {
     ArrayList<NameValuePair> params = new ArrayList<>();
     params.add(new BasicNameValuePair("event", "1003"));
-    params.add(new BasicNameValuePair("recv", recvID));
+    params.add(new BasicNameValuePair("recv", rid));
     params.add(new BasicNameValuePair("amount", amount));
     params.add(new BasicNameValuePair("message", message));
 
@@ -90,13 +90,15 @@ public class TransferCommand implements Command {
         String text = embedded.getElementsByClass("text").get(0).text();
 
         if (text.contains("请勿进行频繁转账")) {
-          redis.lshift(Store.TRANSFER_DATA_KEY, recvID, TTL);
+          redis.lshift(Store.TRANSFER_DATA_KEY, rid, TTL);
           receiver.sendMsg(gid, "md", "*追加任务成功*", null);
         } else {
           receiver.sendMsg(gid, "md", String.format("*%s*", text), null);
         }
       } else if (resp.getCode() == 302) {
-        receiver.sendMsg(gid, "md", String.format("*[%s] 转账成功*", recvID), null);
+        receiver.sendMsg(gid, "md", String.format("*[%s] 转账成功*", rid), null);
+        List<String> list = (List<String>) redis.get(Store.TRANSFER_DATA_KEY);
+        if (Objects.nonNull(list) && list.size() == 0) receiver.sendMsg(gid, "md", "*转账任务结束*", null);
       }
     } catch (HttpException e) { }
   }
@@ -105,13 +107,11 @@ public class TransferCommand implements Command {
     new Timer().schedule(new TimerTask() {
       @Override
       public void run() {
-        List<Integer> list = (List<Integer>) redis.get(Store.TRANSFER_DATA_KEY);
-        if (Objects.nonNull(list) && list.size() > 0) transferCoin(gid, (String) redis.lunshift(Store.TRANSFER_DATA_KEY), amount, message);
-        if (Objects.nonNull(list) && list.size() > 0) queue(gid, amount, message);
-        if (Objects.nonNull(list) && list.size() == 0) {
-          redis.set(Store.TRANSFER_MARK_KEY, false, TTL);
-          receiver.sendMsg(gid, "md", "转账任务结束", null);
-        }
+        String id = (String) redis.lunshift(Store.TRANSFER_DATA_KEY);
+        if (Objects.nonNull(id)) {
+          transferCoin(gid, id, amount, message);
+          queue(gid, amount, message);
+        } else redis.set(Store.TRANSFER_MARK_KEY, false, TTL);
       }
     }, 5 * 60 * 1000 + 1000); // 五分零一秒
   }

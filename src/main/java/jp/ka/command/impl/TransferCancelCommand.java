@@ -33,6 +33,7 @@ public class TransferCancelCommand implements Command {
     if (Objects.nonNull(list) && list.size() > 0) {
       redis.set(Store.TRANSFER_DATA_KEY, new ArrayList<String>(), -1);
       receiver.sendMsg(gid, "md", "*队列已清空*", null);
+      receiver.sendMsg(gid, "md", "*转账任务结束*", null);
     } else {
       receiver.sendMsg(gid, "md", "*队列没有任务*", null);
     }

@@ -47,6 +47,9 @@ public class TransferDeleteCommand implements Command {
       tmpMsg = String.format("*已删除 UID*\n\n`%s`", String.join("\n", tmpList));
     }
     receiver.sendMsg(gid, "md", tmpMsg, null);
+
+    List<String> list = (List<String>) redis.get(Store.TRANSFER_DATA_KEY);
+    if (Objects.nonNull(list) && list.size() == 0)  receiver.sendMsg(gid, "md", "转账任务结束", null);
   }
 
   @Override
