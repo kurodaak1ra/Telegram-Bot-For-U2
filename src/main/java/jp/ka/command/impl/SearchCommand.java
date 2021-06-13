@@ -31,13 +31,12 @@ public class SearchCommand implements Command {
   private Receiver receiver;
 
   @Override
-  public void execute(Update update) {
-    Message msg = update.getMessage();
+  public void execute(Message msg) {
     Long gid = msg.getChatId();
 
     String[] split = msg.getText().split("\n");
-    if (split[0].trim().contains(" ") || split.length > 2) {
-      receiver.sendMsg(gid, "md", Text.COMMAND_ERROR + copyWriting(), null);
+    if (split.length > 2) {
+      prompt(gid);
       return;
     }
 
@@ -75,8 +74,9 @@ public class SearchCommand implements Command {
     return "搜索";
   }
 
-  private String copyWriting() {
-    return "\n\n`/search`\n`<keywords - 关键词（可省略）>`";
+  @Override
+  public Message prompt(Long gid) {
+    return receiver.sendMsg(gid, "md", Text.COMMAND_ERROR + "\n\n`/search`\n`<keywords - 关键词 (可省略)>`", null);
   }
 
   private String formatName(String msg) {

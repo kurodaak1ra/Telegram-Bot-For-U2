@@ -16,8 +16,6 @@ import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.media.InputMedia;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
 import java.io.InputStream;
 import java.util.*;
@@ -32,8 +30,8 @@ public class SignCommand implements Command {
   private RedisUtils redis;
 
   @Override
-  public void execute(Update update) {
-    Long gid = update.getMessage().getChatId();
+  public void execute(Message msg) {
+    Long gid = msg.getChatId();
 
     Integer mid = (Integer) redis.get(Store.SIGN_MESSAGE_ID_KEY);
     if (Objects.nonNull(mid)) {
@@ -60,6 +58,11 @@ public class SignCommand implements Command {
     return "签到";
   }
 
+  @Override
+  public Message prompt(Long gid) {
+    return null;
+  }
+
   public void sendSign(Long gid) {
     String img = "";
     HashMap<String, String> params = new HashMap<>();
@@ -81,7 +84,7 @@ public class SignCommand implements Command {
       Elements btns = captcha.getElementsByTag("input");
 
       img = imgs.get(0).attr("src");
-      params.put("message", "来自 Telegram Bot - U2 Tool Box\n\nDesigned by KA");
+      params.put("message", Store.ADV);
       params.put("req", btns.get(0).attr("value"));
       params.put("hash", btns.get(1).attr("value"));
       params.put("form", btns.get(2).attr("value"));

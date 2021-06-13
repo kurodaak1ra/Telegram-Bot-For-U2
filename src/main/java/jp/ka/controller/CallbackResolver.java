@@ -1,8 +1,13 @@
 package jp.ka.controller;
 
 import jp.ka.callback.Callback;
+import jp.ka.config.Text;
+import jp.ka.utils.RedisUtils;
+import jp.ka.utils.Store;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.util.HashMap;
@@ -11,6 +16,9 @@ import java.util.Objects;
 
 @Component
 public class CallbackResolver {
+
+  @Autowired
+  private RedisUtils redis;
 
   private final Map<String, Callback> callbackMap = new HashMap<>();
 
@@ -23,11 +31,25 @@ public class CallbackResolver {
   }
 
   public void executeCommand(Update update) {
-    String data = update.getCallbackQuery().getData();
-    Callback callback = callbackMap.get(data.split(":")[0]);
+    CallbackQuery query = update.getCallbackQuery();
+
+    String[] data = query.getData().split(":");
+    Callback callback = callbackMap.get(data[0]);
     if (Objects.isNull(callback)) return;
 
-    callback.execute(update);
+    String qid = query.getId();
+    Long gid = query.getMessage().getChatId();
+    Integer mid = query.getMessage().getMessageId();
+
+    Map<String, Object> cache = (Map<String, Object>) redis.get(data[1]);
+    if (Objects.isNull(cache)) {
+      Store.context.getBean(Receiver.class).sendDel(gid, mid);
+      Store.context.getBean(Receiver.class).sendCallbackAnswer(qid, false, Text.CALLBACK_EXPIRE);
+      return;
+    }
+    if (cache.get("source").equals("close")) Store.context.getBean(Receiver.class).sendDel(gid, mid);
+
+    callback.execute(query, cache);
   }
 
 }

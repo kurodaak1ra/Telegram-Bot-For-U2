@@ -25,8 +25,8 @@ public class TransferCancelCommand implements Command {
   private Receiver receiver;
 
   @Override
-  public void execute(Update update) {
-    Long gid = update.getMessage().getChatId();
+  public void execute(Message msg) {
+    Long gid = msg.getChatId();
 
     receiver.sendMsg(gid, "md", Text.WAITING, null);
     List<Object> list = (List<Object>) redis.get(Store.TRANSFER_DATA_KEY);
@@ -51,6 +51,11 @@ public class TransferCancelCommand implements Command {
   @Override
   public String description() {
     return "取消转账队列";
+  }
+
+  @Override
+  public Message prompt(Long gid) {
+    return null;
   }
 
 }

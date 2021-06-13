@@ -5,6 +5,7 @@ import jp.ka.config.Config;
 import jp.ka.utils.Store;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.util.HashMap;
@@ -29,20 +30,27 @@ public class CommandResolver {
   }
 
   public void executeCommand(Update update) {
-    String commandText = update.getMessage().getText().toUpperCase().replaceAll("\n", " ").split(" ")[0];
+    Message msg = update.getMessage();
+
+    String commandText = msg.getText().toUpperCase().replaceAll("\n", " ").split(" ")[0];
     if (commandText.charAt(0) == '/') {
       Command command = commandMap.get(commandText.substring(1));
       if (Objects.isNull(command)) return;
 
       boolean hasCookie = Config.session.containsKey(Config.cookieKey);
       if ((hasCookie && (!command.getClass().getSimpleName().equals("CaptchaCommand") && !command.getClass().getSimpleName().equals("LoginCommand"))) || (!hasCookie && !command.needLogin())) {
-        command.execute(update);
+        String firstLine = msg.getText().toUpperCase().split("\n")[0].trim();
+        if (firstLine.contains(" ")) {
+          Message prompt = command.prompt(msg.getChatId());
+          if (Objects.nonNull(prompt)) return;
+        }
+        command.execute(msg);
         return;
       }
 
       String errMsg = "*请登陆*";
       if (hasCookie) errMsg = "*您已登陆*";
-      Store.context.getBean(Receiver.class).sendMsg(update.getMessage().getChatId(), "md", errMsg, null);
+      Store.context.getBean(Receiver.class).sendMsg(msg.getChatId(), "md", errMsg, null);
     }
   }
 

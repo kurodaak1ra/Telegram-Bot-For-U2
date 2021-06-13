@@ -18,8 +18,7 @@ public class MeCommand implements Command {
   private Receiver receiver;
 
   @Override
-  public void execute(Update update) {
-    Message msg = update.getMessage();
+  public void execute(Message msg) {
     Long gid = msg.getChatId();
 
     receiver.sendMsg(gid, "md", Text.WAITING, null);
@@ -39,6 +38,11 @@ public class MeCommand implements Command {
   @Override
   public String description() {
     return "个人信息";
+  }
+
+  @Override
+  public Message prompt(Long gid) {
+    return null;
   }
 
 }

@@ -1,7 +1,6 @@
 package jp.ka.callback.impl;
 
 import jp.ka.callback.Callback;
-import jp.ka.callback.CallbackTools;
 import jp.ka.config.Config;
 import jp.ka.config.Text;
 import jp.ka.config.U2;
@@ -13,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
-import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.util.*;
 
@@ -27,13 +25,8 @@ public class TorrentInfoCallback implements Callback {
   private Receiver receiver;
 
   @Override
-  public void execute(Update update) {
-    CallbackQuery query = update.getCallbackQuery();
+  public void execute(CallbackQuery query, Map<String, Object> cache) {
     Long gid = query.getMessage().getChatId();
-    Integer mid = query.getMessage().getMessageId();
-
-    Map<String, Object> cache = CallbackTools.hasExpired(gid, query);
-    if (Objects.isNull(cache)) return;
 
     Integer torrentLinkMsgID = (Integer) redis.get(Store.TORRENT_LINK_MESSAGE_ID_KEY);
 
@@ -50,7 +43,6 @@ public class TorrentInfoCallback implements Callback {
           receiver.sendDel(gid, torrentLinkMsgID);
           redis.del(Store.TORRENT_LINK_MESSAGE_ID_KEY);
         }
-        receiver.sendDel(gid, mid);
         redis.del(Store.TORRENT_INFO_MESSAGE_ID_KEY);
         break;
       }

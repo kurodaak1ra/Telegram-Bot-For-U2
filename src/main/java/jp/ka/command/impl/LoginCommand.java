@@ -27,8 +27,7 @@ public class LoginCommand implements Command {
   private Receiver receiver;
 
   @Override
-  public void execute(Update update) {
-    Message msg = update.getMessage();
+  public void execute(Message msg) {
     Long gid = msg.getChatId();
     Integer mid = msg.getMessageId();
 
@@ -39,9 +38,12 @@ public class LoginCommand implements Command {
 
     String[] split = msg.getText().split("\n");
     if (split.length != 4) {
-      receiver.sendMsg(gid, "md", Text.COMMAND_ERROR + copyWriting(), null);
+      prompt(gid);
       return;
     }
+    String username = split[1].trim();
+    String password = split[2].trim();
+    String captcha = split[3].trim();
 
     receiver.sendDel(gid, mid);
     receiver.sendMsg(gid, "md", Text.WAITING, null);
@@ -49,9 +51,9 @@ public class LoginCommand implements Command {
       ArrayList<NameValuePair> params = new ArrayList<>();
       params.add(new BasicNameValuePair("login_type", "email"));
       params.add(new BasicNameValuePair("login_ajax", "1"));
-      params.add(new BasicNameValuePair("username", split[1].trim()));
-      params.add(new BasicNameValuePair("password", split[2].trim()));
-      params.add(new BasicNameValuePair("captcha", split[3].trim()));
+      params.add(new BasicNameValuePair("username", username));
+      params.add(new BasicNameValuePair("password", password));
+      params.add(new BasicNameValuePair("captcha", captcha));
 
       RespPost resp = HttpUtils.postForm(gid, "/takelogin.php", params);
       if (resp.getData().get("status").equals("error")) {
@@ -93,8 +95,9 @@ public class LoginCommand implements Command {
     return "登陆";
   }
 
-  private String copyWriting() {
-    return "\n\n`/login`\n`<user@example\\.com>`\n`<password>`\n`<captcha code>`";
+  @Override
+  public Message prompt(Long gid) {
+    return receiver.sendMsg(gid, "md", Text.COMMAND_ERROR + "\n\n`/login`\n`<user@example\\.com>`\n`<password>`\n`<captcha code>`", null);
   }
 
 }

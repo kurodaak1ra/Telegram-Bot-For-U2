@@ -2,7 +2,6 @@ package jp.ka.command.impl;
 
 import jp.ka.command.Command;
 import jp.ka.config.Text;
-import jp.ka.config.U2;
 import jp.ka.controller.Receiver;
 import jp.ka.utils.RedisUtils;
 import jp.ka.utils.Store;
@@ -25,12 +24,12 @@ public class TransferDeleteCommand implements Command {
   private Receiver receiver;
 
   @Override
-  public void execute(Update update) {
-    Long gid = update.getMessage().getChatId();
+  public void execute(Message msg) {
+    Long gid = msg.getChatId();
 
-    String[] split = update.getMessage().getText().split("\n");
+    String[] split = msg.getText().split("\n");
     if (split.length != 2) {
-      receiver.sendMsg(gid, "md", Text.COMMAND_ERROR + copyWriting(), null);
+      prompt(gid);
       return;
     }
 
@@ -65,8 +64,9 @@ public class TransferDeleteCommand implements Command {
     return "删除队列中一个或多个 UID";
   }
 
-  private String copyWriting() {
-    return "\n\n`/transfer_delete`\n`<uid - 可多个空格分隔>`";
+  @Override
+  public Message prompt(Long gid) {
+    return receiver.sendMsg(gid, "md", Text.COMMAND_ERROR + "\n\n`/transfer_delete`\n`<uid - 可多个空格分隔>`", null);
   }
 
 }

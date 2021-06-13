@@ -8,7 +8,8 @@ import jp.ka.utils.Store;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
-import org.telegram.telegrambots.meta.api.objects.Update;
+
+import java.util.Map;
 
 @Component
 public class TorrentLinkCallback implements Callback {
@@ -20,13 +21,8 @@ public class TorrentLinkCallback implements Callback {
   private Receiver receiver;
 
   @Override
-  public void execute(Update update) {
-    CallbackQuery query = update.getCallbackQuery();
-    Long gid = query.getMessage().getChatId();
-    Integer mid = query.getMessage().getMessageId();
-
+  public void execute(CallbackQuery query, Map<String, Object> cache) {
     receiver.sendCallbackAnswer(query.getId(), false, Text.CALLBACK_WAITING);
-    receiver.sendDel(gid, mid);
     redis.del(Store.TORRENT_LINK_MESSAGE_ID_KEY);
   }
 

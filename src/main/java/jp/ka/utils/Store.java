@@ -8,6 +8,8 @@ public class Store {
 
   public static final int TTL = 5 * 30;
 
+  public static final String ADV = "来自 Telegram Bot - U2 Tool Box\n\nDesigned by KA";
+
   public static final String SIGN_MESSAGE_ID_KEY = "sign.message.id";
   public static final String SIGN_MESSAGE_MARK_KEY = "sign.message.mark";
 

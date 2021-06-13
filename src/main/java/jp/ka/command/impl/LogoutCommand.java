@@ -19,8 +19,8 @@ public class LogoutCommand implements Command {
   private Receiver receiver;
 
   @Override
-  public void execute(Update update) {
-    Long gid = update.getMessage().getChatId();
+  public void execute(Message msg) {
+    Long gid = msg.getChatId();
 
     receiver.sendMsg(gid, "md", Text.WAITING, null);
     try {
@@ -43,6 +43,11 @@ public class LogoutCommand implements Command {
   @Override
   public String description() {
     return "登出";
+  }
+
+  @Override
+  public Message prompt(Long gid) {
+    return null;
   }
 
 }

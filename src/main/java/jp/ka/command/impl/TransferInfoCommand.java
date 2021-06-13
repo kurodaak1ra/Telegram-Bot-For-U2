@@ -7,6 +7,7 @@ import jp.ka.utils.RedisUtils;
 import jp.ka.utils.Store;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.util.List;
@@ -22,8 +23,8 @@ public class TransferInfoCommand implements Command {
   private Receiver receiver;
 
   @Override
-  public void execute(Update update) {
-    Long gid = update.getMessage().getChatId();
+  public void execute(Message msg) {
+    Long gid = msg.getChatId();
 
     List<Object> list = (List<Object>) redis.get(Store.TRANSFER_DATA_KEY);
     List<String> listIds = (List<String>)(List)list;
@@ -47,6 +48,11 @@ public class TransferInfoCommand implements Command {
   @Override
   public String description() {
     return "当前转账队列";
+  }
+
+  @Override
+  public Message prompt(Long gid) {
+    return null;
   }
 
 }

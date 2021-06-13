@@ -6,6 +6,7 @@ import jp.ka.controller.CommandResolver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.util.Objects;
@@ -20,8 +21,8 @@ public class AllCommand implements Command {
   private ApplicationContext applicationContext;
 
   @Override
-  public void execute(Update update) {
-    Long gid = update.getMessage().getChatId();
+  public void execute(Message msg) {
+    Long gid = msg.getChatId();
 
     StringBuilder builder = new StringBuilder();
     for (CMD cmd : CMD.values()) {
@@ -45,6 +46,11 @@ public class AllCommand implements Command {
   @Override
   public String description() {
     return "全部指令";
+  }
+
+  @Override
+  public Message prompt(Long gid) {
+    return null;
   }
 
 }

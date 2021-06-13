@@ -1,7 +1,6 @@
 package jp.ka.callback.impl;
 
 import jp.ka.callback.Callback;
-import jp.ka.callback.CallbackTools;
 import jp.ka.command.impl.SignCommand;
 import jp.ka.config.Text;
 import jp.ka.controller.Receiver;
@@ -17,11 +16,9 @@ import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
-import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.Objects;
 
 @Component
 public class SignCallback implements Callback {
@@ -33,12 +30,8 @@ public class SignCallback implements Callback {
   private Receiver receiver;
 
   @Override
-  public void execute(Update update) {
-    CallbackQuery query = update.getCallbackQuery();
+  public void execute(CallbackQuery query, Map<String, Object> cache) {
     Long gid = query.getMessage().getChatId();
-
-    Map<String, Object> cache = CallbackTools.hasExpired(gid, query);
-    if (Objects.isNull(cache)) return;
 
     String mark = (String) cache.get("mark");
     String cacheMark = (String) redis.get(Store.SIGN_MESSAGE_MARK_KEY);

@@ -2,7 +2,6 @@ package jp.ka.callback.impl;
 
 import jp.ka.bean.RespGet;
 import jp.ka.callback.Callback;
-import jp.ka.callback.CallbackTools;
 import jp.ka.command.impl.SearchCommand;
 import jp.ka.config.Text;
 import jp.ka.config.U2;
@@ -19,7 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
-import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.util.*;
 
@@ -33,12 +31,8 @@ public class SearchCallback implements Callback {
   private Receiver receiver;
 
   @Override
-  public void execute(Update update) {
-    CallbackQuery query = update.getCallbackQuery();
+  public void execute(CallbackQuery query, Map<String, Object> cache) {
     Long gid = query.getMessage().getChatId();
-
-    Map<String, Object> cache = CallbackTools.hasExpired(gid, query);
-    if (Objects.isNull(cache)) return;
 
     String mark = (String) cache.get("mark");
     String cacheMark = (String) redis.get(Store.SEARCH_MARK_KEY);
@@ -149,15 +143,10 @@ public class SearchCallback implements Callback {
         }
       }
 
-      String torrentLinkUUID = cacheData("torrent_link", item.get("tid"));
-      List<List<String>> torrentLink = Arrays.asList(Arrays.asList("🔗", CBK.TORRENT_INFO + ":" + torrentLinkUUID));
-
-      String closeUUID = cacheData("close", null);
-      List<List<String>> close = Arrays.asList(Arrays.asList("❌", CBK.TORRENT_INFO + ":" + closeUUID));
-
-      List<List<List<String>>> row1 = Arrays.asList(torrentLink);
-      List<List<List<String>>> row2 = Arrays.asList(close);
-      List<List<List<List<String>>>> columns = Arrays.asList(row1, row2);
+      List<List<List<List<String>>>> columns = Arrays.asList(
+          Arrays.asList(Arrays.asList(Arrays.asList("🔗", CBK.TORRENT_INFO + ":" + cacheData("torrent_link", item.get("tid"))))),
+          Arrays.asList(Arrays.asList(Arrays.asList("❌", CBK.TORRENT_INFO + ":" + cacheData("close", null))))
+      );
 
       Integer torrentMsgID = (Integer) redis.get(Store.TORRENT_INFO_MESSAGE_ID_KEY);
       if (Objects.isNull(torrentMsgID)) {

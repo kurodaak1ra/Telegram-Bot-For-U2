@@ -23,8 +23,7 @@ public class CaptchaCommand implements Command {
   private Receiver receiver;
 
   @Override
-  public void execute(Update update) {
-    Message msg = update.getMessage();
+  public void execute(Message msg) {
     Long gid = msg.getChatId();
 
     receiver.sendMsg(gid, "md", Text.WAITING, null);
@@ -48,6 +47,11 @@ public class CaptchaCommand implements Command {
   @Override
   public String description() {
     return "登陆验证码";
+  }
+
+  @Override
+  public Message prompt(Long gid) {
+    return null;
   }
 
 }

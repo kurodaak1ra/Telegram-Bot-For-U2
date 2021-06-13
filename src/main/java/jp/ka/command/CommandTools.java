@@ -1,6 +1,5 @@
 package jp.ka.command;
 
-import jp.ka.config.Text;
 import jp.ka.config.U2;
 import jp.ka.controller.Receiver;
 import jp.ka.exception.HttpException;
@@ -56,14 +55,14 @@ public class CommandTools {
         }
         if (a.size() == 12) U2.downloading = a.get(11).text();
       }
-      // =====
+      // ==================================
       Element uCoin = medium.getElementsByClass("ucoin-notation").get(0);
       U2.coinGold = uCoin.getElementsByClass("ucoin-gold").text();
       U2.coinSilver = uCoin.getElementsByClass("ucoin-silver").text();
       U2.coinCopper = uCoin.getElementsByClass("ucoin-copper").text();
 
-      String tmpMsg = String.format("*\\[个人信息\\]*\n\nUID: `%s`\n用户名: `%s`\n分享率: `%s`\n上传量: `%s`\n下载量: `%s`\nUCoin: `%s/%s/%s`\n邀请: `%s`\n客户端: `%s`\n上传: `%s`\n下载: `%s`",
-          U2.uid, U2.username, U2.shareRate, U2.uploads, U2.downloads, U2.coinGold, U2.coinSilver, U2.coinCopper, U2.invite, U2.client, U2.uploading, U2.downloading);
+      String tmpMsg = String.format("*\\[个人信息\\]*\n\nUID: `%s`\n用户名: `%s`\n分享率: `%s`\n上传量: `%s`\n下载量: `%s`\nUCoin: `%s%s%s`\n邀请: `%s`\n客户端: `%s`\n上传: `%s`\n下载: `%s`",
+          U2.uid, U2.username, U2.shareRate, U2.uploads, U2.downloads, U2.coinGold.equals("") ? "" : "\uD83E\uDD47" + U2.coinGold, U2.coinSilver.equals("") ? "" : "\uD83E\uDD48" + U2.coinSilver, U2.coinCopper.equals("") ? "" : "\uD83E\uDD49" + U2.coinCopper, U2.invite, U2.client, U2.uploading, U2.downloading);
       receiver.sendMsg(gid, "md", tmpMsg, null);
     } catch (HttpException e) { }
   }
