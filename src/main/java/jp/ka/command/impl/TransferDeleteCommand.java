@@ -33,11 +33,13 @@ public class TransferDeleteCommand implements Command {
       return;
     }
 
+    String rids = split[1].trim();
+
     receiver.sendMsg(gid, "md", Text.WAITING, null);
     List<String> tmpList = new ArrayList<>();
-    for (String uid : split[1].split(" ")) {
-      Boolean rm = redis.lremove(Store.TRANSFER_DATA_KEY, uid);
-      if (Objects.nonNull(rm) && rm) tmpList.add(uid);
+    for (String rid : rids.split(" ")) {
+      Boolean rm = redis.lremove(Store.TRANSFER_DATA_KEY, rid);
+      if (Objects.nonNull(rm) && rm) tmpList.add(rid);
     }
 
     String tmpMsg = "";
