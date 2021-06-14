@@ -22,8 +22,13 @@ public class TorrentLinkCallback implements Callback {
 
   @Override
   public void execute(CallbackQuery query, Map<String, Object> cache) {
-    receiver.sendCallbackAnswer(query.getId(), false, Text.CALLBACK_WAITING);
-    redis.del(Store.TORRENT_LINK_MESSAGE_ID_KEY);
+    String source = (String) cache.get("source");
+    switch (source) {
+      case "close": {
+        redis.del(Store.TORRENT_INFO_MESSAGE_ID_KEY);
+        break;
+      }
+    }
   }
 
   @Override

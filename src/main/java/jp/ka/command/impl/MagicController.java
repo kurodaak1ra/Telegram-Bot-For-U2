@@ -20,7 +20,6 @@ import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Message;
-import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.util.*;
 
@@ -42,6 +41,7 @@ public class MagicController implements Command {
       prompt(gid);
       return;
     }
+
     String tid = split[1].trim();
     String uid = split[2].toUpperCase().trim();
     String hours = split[3].trim();
@@ -59,53 +59,18 @@ public class MagicController implements Command {
       dr = promotions[2];
     }
 
-    List<NameValuePair> params = new ArrayList<>();
-    try {
-      RespGet page = HttpUtils.get(gid, "/promotion.php?action=magic&torrent=" + tid);
-      Elements forms = page.getHtml().getElementsByTag("form");
-      if (forms.size() == 2) {
-        String errText = page.getHtml().getElementsByClass("embedded").get(2).getElementsByTag("td").get(1).text();
-        receiver.sendMsg(gid, "md", CommonUtils.formatMD(errText), null);
-        return;
-      }
-      Elements hiddenInput = forms.get(2).getElementsByTag("input");
-      for (int i = 0; i < 8; i++) {
-        Element param = hiddenInput.get(i);
-        params.add(new BasicNameValuePair(param.attr("name"), param.attr("value")));
-      }
-    } catch (HttpException e) {
-      return;
-    }
+    HashMap<String, Object> magic = magicPre(gid, tid, uid, hours, promote, ur, dr);
+    List<NameValuePair> params = (List<NameValuePair>) magic.get("params");
+    Map<String, String> fee = (Map<String, String>) magic.get("fee");
 
-    params.add(new BasicNameValuePair("user", uid.equals("ALL") ? uid : (uid.equals(U2.uid) ? "SELF" : "OTHER")));
-    params.add(new BasicNameValuePair("user_other", !uid.equals("ALL") && !uid.equals(U2.uid) ? uid : ""));
-    params.add(new BasicNameValuePair("start", "0"));
-    params.add(new BasicNameValuePair("hours", hours));
-    params.add(new BasicNameValuePair("promotion", promote));
-    params.add(new BasicNameValuePair("ur", ur));
-    params.add(new BasicNameValuePair("dr", dr));
-    params.add(new BasicNameValuePair("comment", Store.ADV));
-
-    try {
-      RespPost resp = HttpUtils.postForm(gid, "/promotion.php?test=1", params);
-      if (resp.getData().get("status").equals("error")) {
-        receiver.sendMsg(gid, "md", CommonUtils.formatMD(resp.getData().get("error")), null);
-        return;
-      }
-      Document price = Jsoup.parse(resp.getData().get("price"), "UTF-8");
-      String gold = price.getElementsByClass("ucoin-gold").text();
-      String silver = price.getElementsByClass("ucoin-silver").text();
-      String copper = price.getElementsByClass("ucoin-copper").text();
-
-      receiver.sendMsg(gid, "md", String.format("*预计费用*: `%s%s%s`",
-          gold.equals("") ? "" : "\uD83E\uDD47" + gold,
-          silver.equals("") ? "" : "\uD83E\uDD48" + silver,
-          copper.equals("") ? "" : "\uD83E\uDD49" + copper
-      ), Arrays.asList(
-          Arrays.asList(Arrays.asList(Arrays.asList("施放魔法", CMD.MAGIC + ":" + cacheData("params", params)))),
-          Arrays.asList(Arrays.asList(Arrays.asList("❌", CMD.MAGIC + ":" + cacheData("close", null))))
-      ));
-    } catch (HttpException e) { }
+    receiver.sendMsg(gid, "md", String.format("*预计费用*: `%s%s%s`",
+        fee.get("gold").equals("") ? "" : "\uD83E\uDD47" + fee.get("gold"),
+        fee.get("silver").equals("") ? "" : "\uD83E\uDD48" + fee.get("silver"),
+        fee.get("copper").equals("") ? "" : "\uD83E\uDD49" + fee.get("copper")
+    ), Arrays.asList(
+        Arrays.asList(Arrays.asList(Arrays.asList("施放魔法", CMD.MAGIC + ":" + cacheData("params", params)))),
+        Arrays.asList(Arrays.asList(Arrays.asList("❌", CMD.MAGIC + ":" + cacheData("close", null))))
+    ));
   }
 
   @Override
@@ -137,6 +102,56 @@ public class MagicController implements Command {
     redis.set(uuid, map, Store.TTL);
 
     return uuid;
+  }
+
+  public HashMap<String, Object> magicPre(Long gid, String tid, String uid, String hours, String promote, String ur, String dr) {
+    HashMap<String, Object> map = new HashMap<>();
+
+    List<NameValuePair> params = new ArrayList<>();
+    try {
+      RespGet page = HttpUtils.get(gid, "/promotion.php?action=magic&torrent=" + tid);
+      Elements forms = page.getHtml().getElementsByTag("form");
+      if (forms.size() == 2) {
+        String errText = page.getHtml().getElementsByClass("embedded").get(2).getElementsByTag("td").get(1).text();
+        receiver.sendMsg(gid, "md", CommonUtils.formatMD(errText), null);
+        return null;
+      }
+      Elements hiddenInput = forms.get(2).getElementsByTag("input");
+      for (int i = 0; i < 8; i++) {
+        Element param = hiddenInput.get(i);
+        params.add(new BasicNameValuePair(param.attr("name"), param.attr("value")));
+      }
+    } catch (HttpException e) {
+      return null;
+    }
+
+    params.add(new BasicNameValuePair("user", uid.equals("ALL") ? uid : (uid.equals(U2.uid) ? "SELF" : "OTHER")));
+    params.add(new BasicNameValuePair("user_other", !uid.equals("ALL") && !uid.equals(U2.uid) ? uid : ""));
+    params.add(new BasicNameValuePair("start", "0"));
+    params.add(new BasicNameValuePair("hours", hours));
+    params.add(new BasicNameValuePair("promotion", promote));
+    params.add(new BasicNameValuePair("ur", ur));
+    params.add(new BasicNameValuePair("dr", dr));
+    params.add(new BasicNameValuePair("comment", Store.ADV));
+    map.put("params", params);
+
+    try {
+      RespPost resp = HttpUtils.postForm(gid, "/promotion.php?test=1", params);
+      if (resp.getData().get("status").equals("error")) {
+        receiver.sendMsg(gid, "md", CommonUtils.formatMD(resp.getData().get("error")), null);
+        return null;
+      }
+      Document price = Jsoup.parse(resp.getData().get("price"), "UTF-8");
+      HashMap<String, String> feeMap = new HashMap<>();
+      feeMap.put("gold", price.getElementsByClass("ucoin-gold").text());
+      feeMap.put("silver", price.getElementsByClass("ucoin-silver").text());
+      feeMap.put("copper", price.getElementsByClass("ucoin-copper").text());
+      map.put("fee", feeMap);
+    } catch (HttpException e) {
+      return null;
+    }
+
+    return map;
   }
 
 }

@@ -10,16 +10,18 @@ import java.util.regex.Pattern;
 public class CommonUtils {
 
   public static String torrentStatus(String str, String promotionUpload, String promotionDownload) {
-    switch (str) {
-      case "FREE": return "↑1↓0";
-      case "2X": return "↑2↓1";
-      case "2X Free": return "↑2↓0";
-      case "50%": return "↑0.5↓1";
-      case "2X 50%": return "↑2↓0.5";
-      case "30%": return "↑0.3↓1";
-      case "Promotion": return String.format("↑%s↓%s", promotionUpload.replaceAll("X", ""), promotionDownload.replaceAll("X", ""));
-      default: return "↑1↓1";
-    }
+    if (str.equals("Promotion")) return String.format("↑%s↓%s", promotionUpload.replaceAll("X", ""), promotionDownload.replaceAll("X", ""));
+    return str;
+    // switch (str) {
+    //   case "FREE": return "🔺1🔻0";
+    //   case "2X": return "🔺2🔻1";
+    //   case "2X Free": return "🔺2🔻0";
+    //   case "50%": return "🔺0.5🔻1";
+    //   case "2X 50%": return "🔺2🔻0.5";
+    //   case "30%": return "🔺0.3🔻1";
+    //   case "Promotion": return String.format("🔺%s🔻%s", promotionUpload.replaceAll("X", ""), promotionDownload.replaceAll("X", ""));
+    //   default: return "🔺1🔻1";
+    // }
   }
 
   public static String formatMD(String msg) {

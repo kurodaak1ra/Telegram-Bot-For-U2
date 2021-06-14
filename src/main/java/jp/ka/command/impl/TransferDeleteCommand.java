@@ -66,7 +66,7 @@ public class TransferDeleteCommand implements Command {
 
   @Override
   public String description() {
-    return "删除队列中一个或多个 UID";
+    return "删除队列中 UID";
   }
 
   @Override

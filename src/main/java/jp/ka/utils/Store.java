@@ -23,6 +23,6 @@ public class Store {
   public static final String SEARCH_OPTIONS_KEY = "search.page";
 
   public static final String TORRENT_INFO_MESSAGE_ID_KEY = "torrent.info.message.id";
-  public static final String TORRENT_LINK_MESSAGE_ID_KEY = "torrent.link.message.id";
+  // public static final String TORRENT_LINK_MESSAGE_ID_KEY = "torrent.link.message.id";
 
 }

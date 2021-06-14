@@ -38,7 +38,7 @@ public class MagicCallback implements Callback {
 
         receiver.sendCallbackAnswer(query.getId(), false, Text.CALLBACK_WAITING);
         try {
-          RespPost resp = HttpUtils.postForm(gid, "/promotion.php?action=magic&torrent=" + tid, params);
+          RespPost resp = magic(gid, tid, params);
           if (resp.getCode() == 200) {
             receiver.sendDel(gid, mid);
             receiver.sendMsg(gid, "md", "*魔法施放成功*", null);
@@ -51,6 +51,10 @@ public class MagicCallback implements Callback {
   @Override
   public CBK cbk() {
     return CBK.MAGIC;
+  }
+
+  public RespPost magic(Long gid, String tid, List<NameValuePair> params) throws HttpException {
+    return HttpUtils.postForm(gid, "/promotion.php?action=magic&torrent=" + tid, params);
   }
 
 }

@@ -27,22 +27,22 @@ public class TorrentInfoCallback implements Callback {
   @Override
   public void execute(CallbackQuery query, Map<String, Object> cache) {
     Long gid = query.getMessage().getChatId();
-
-    Integer torrentLinkMsgID = (Integer) redis.get(Store.TORRENT_LINK_MESSAGE_ID_KEY);
+    Integer mid = query.getMessage().getMessageId();
 
     receiver.sendCallbackAnswer(query.getId(), false, Text.CALLBACK_WAITING);
+    redis.expired(Store.TORRENT_INFO_MESSAGE_ID_KEY, Store.TTL);
+    String tid = (String) cache.get("tid");
     String source = (String) cache.get("source");
     switch (source) {
       case "torrent_link": {
-        String tid = (String) cache.get("tid");
-        sendTorrentLink(gid, tid, torrentLinkMsgID);
+        link(gid, mid, tid);
+        break;
+      }
+      case "magic": {
+        magic(gid, mid, tid);
         break;
       }
       case "close": {
-        if (Objects.nonNull(torrentLinkMsgID)) {
-          receiver.sendDel(gid, torrentLinkMsgID);
-          redis.del(Store.TORRENT_LINK_MESSAGE_ID_KEY);
-        }
         redis.del(Store.TORRENT_INFO_MESSAGE_ID_KEY);
         break;
       }
@@ -54,17 +54,39 @@ public class TorrentInfoCallback implements Callback {
     return CBK.TORRENT_INFO;
   }
 
-  private void sendTorrentLink(Long gid, String tid, Integer torrentLinkMsgID) {
-    List<List<List<List<String>>>> columns = Arrays.asList(Arrays.asList(Arrays.asList(Arrays.asList("❌", CBK.TORRENT_LINK + ":close"))));
-    String text = String.format("链接包含私密的 passkey 请谨慎使用\n\n%s/download.php?id=%s&passkey=%s&https=1", Config.U2Domain, tid, U2.passKey);
+  private void link(Long gid, Integer mid, String tid) {
+    String uuid = UUID.randomUUID().toString();
+    Map<String, Object> map = new HashMap<>();
+    map.put("source", "close");
+    redis.set(uuid, map, Store.TTL);
 
-    if (Objects.isNull(torrentLinkMsgID)) {
-      Message msg = receiver.sendMsg(gid, "md", CommonUtils.formatMD(text), columns);
-      redis.set(Store.TORRENT_LINK_MESSAGE_ID_KEY, msg.getMessageId(), Store.TTL);
-    } else {
-      receiver.sendEditMsg(gid, torrentLinkMsgID, "md", CommonUtils.formatMD(text), columns);
-      redis.expired(Store.TORRENT_LINK_MESSAGE_ID_KEY, Store.TTL);
-    }
+    String text = String.format("链接包含私密的 passkey 请谨慎使用\n\n%s/download.php?id=%s&passkey=%s&https=1", Config.U2Domain, tid, U2.passKey);
+    receiver.sendEditMsg(gid, mid, "md", CommonUtils.formatMD(text), Arrays.asList(Arrays.asList(Arrays.asList(
+        Arrays.asList("❌", CBK.TORRENT_LINK + ":" + uuid)
+    ))));
   }
 
+  public void magic(Long gid, Integer mid, String tid) {
+    receiver.sendEditMsg(gid, mid, "md", "*请选择施放对象*", Arrays.asList(
+      Arrays.asList(Arrays.asList(
+        Arrays.asList("全体", CBK.TORRENT_MAGIC_FOR + ":" + cacheData("data", tid, "ALL")),
+        Arrays.asList("自己", CBK.TORRENT_MAGIC_FOR + ":" + cacheData("data", tid, U2.uid))
+      )),
+      Arrays.asList(Arrays.asList(
+        Arrays.asList("❌", CBK.TORRENT_MAGIC_FOR + ":" + cacheData("close", null, null))
+      ))
+    ));
+  }
+
+  private String cacheData(String source, String tid, String forr) {
+    String uuid = UUID.randomUUID().toString();
+
+    HashMap<String, Object> map = new HashMap<>();
+    map.put("source", source);
+    if (Objects.nonNull(forr)) map.put("for", forr);
+    if (Objects.nonNull(tid)) map.put("tid", tid);
+    redis.set(uuid, map, Store.TTL);
+
+    return uuid;
+  }
 }

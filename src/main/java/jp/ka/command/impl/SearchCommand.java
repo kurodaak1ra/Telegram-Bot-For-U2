@@ -15,7 +15,6 @@ import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Message;
-import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -48,10 +47,16 @@ public class SearchCommand implements Command {
     redis.set(Store.SEARCH_OPTIONS_KEY, map, Store.TTL);
     redis.set(Store.SEARCH_MARK_KEY, UUID.randomUUID().toString(), Store.TTL);
     redis.set(Store.SEARCH_DATA_KEY, new ArrayList<Map<String, String>>(), Store.TTL);
+
     Integer searchMsgID = (Integer) redis.get(Store.SEARCH_MESSAGE_ID_KEY);
     if (Objects.nonNull(searchMsgID)) {
       receiver.sendDel(gid, searchMsgID);
       redis.del(Store.SEARCH_MESSAGE_ID_KEY);
+    }
+    Integer torrentInfoMsgID = (Integer) redis.get(Store.TORRENT_INFO_MESSAGE_ID_KEY);
+    if (Objects.nonNull(torrentInfoMsgID)) {
+      receiver.sendDel(gid, torrentInfoMsgID);
+      redis.del(Store.TORRENT_INFO_MESSAGE_ID_KEY);
     }
 
     receiver.sendMsg(gid, "md", Text.WAITING, null);
@@ -217,11 +222,10 @@ public class SearchCommand implements Command {
       String index = i + 1 < 10 ? "0" + (i + 1) : "" + (i + 1);
 
       Map<String, String> item = items.get(i);
-      sb.append(String.format("*%s*\\. `\\[%s\\][%s][%s][%s]`\n[%s](%s)\n",
+      sb.append(String.format("*%s*\\. `\uD83D\uDCBE%s\\|%s\\|\uD83C\uDE39%s`\n[%s](%s)\n",
           index,
-          formatLength(3, formatSize(item.get("size"))),
-          formatLength(2, "↑" + item.get("seeder")),
-          formatLength(2, "↓" + item.get("downloader")),
+          formatSize(item.get("size")),
+          "\uD83D\uDC46" + item.get("seeder") + "\uD83D\uDC47" + item.get("downloader"),
           CommonUtils.torrentStatus(item.get("status"), item.get("status_promotion_upload"), item.get("status_promotion_download")),
           formatName(item.get("name")),
           Config.U2Domain + "/details.php?id=" + item.get("tid") + "&hit=1")

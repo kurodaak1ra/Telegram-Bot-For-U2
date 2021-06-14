@@ -36,24 +36,12 @@ public class SearchCallback implements Callback {
 
     String mark = (String) cache.get("mark");
     String cacheMark = (String) redis.get(Store.SEARCH_MARK_KEY);
-    if (!mark.equals(cacheMark)) {
-      receiver.sendDel(gid, query.getMessage().getMessageId());
-      receiver.sendCallbackAnswer(query.getId(), false, Text.CALLBACK_EXPIRE);
-      return;
-    }
-
     List<Map<String, String>> items = (List<Map<String, String>>) redis.get(Store.SEARCH_DATA_KEY);
     Map<String, Object> option = (Map<String, Object>) redis.get(Store.SEARCH_OPTIONS_KEY);
-    if (Objects.isNull(items) || Objects.isNull(option)) {
+    if (!mark.equals(cacheMark) || Objects.isNull(items) || Objects.isNull(option)) {
       receiver.sendDel(gid, query.getMessage().getMessageId());
       receiver.sendCallbackAnswer(query.getId(), false, Text.CALLBACK_EXPIRE);
       return;
-    }
-
-    Integer torrentLinkMsgID = (Integer) redis.get(Store.TORRENT_LINK_MESSAGE_ID_KEY);
-    if (Objects.nonNull(torrentLinkMsgID)) {
-      receiver.sendDel(gid, torrentLinkMsgID);
-      redis.del(Store.TORRENT_LINK_MESSAGE_ID_KEY);
     }
 
     redis.expired(Store.SEARCH_DATA_KEY, Store.TTL);
@@ -67,7 +55,7 @@ public class SearchCallback implements Callback {
     switch (source) {
       case "item": {
         Integer index = (Integer) cache.get("index");
-        item(gid, items.get(index));
+        item(gid, items.get(index), mark);
         break;
       }
       case "prev": {
@@ -94,7 +82,7 @@ public class SearchCallback implements Callback {
     return CBK.SEARCH;
   }
 
-  private void item(Long gid, Map<String, String> item) {
+  private void item(Long gid, Map<String, String> item, String mark) {
     try {
       RespGet resp = HttpUtils.get(gid, "/details.php?id=" + item.get("tid") + "&hit=1");
       Elements trs = resp.getHtml().getElementById("outer").getElementsByTag("table").get(0).getElementsByTag("tr");
@@ -122,12 +110,17 @@ public class SearchCallback implements Callback {
           }
           case "流量优惠": {
             Elements service = tr.getElementsByTag("time");
-            if (service.size() == 0) {
-              sb.append("*优惠类型*: `普通`\n");
-            } else {
+            if (service.size() != 0) {
               sb.append("*优惠类型*: `" + CommonUtils.torrentStatus(item.get("status"), item.get("status_promotion_upload"), item.get("status_promotion_download")) + "`\n");
               sb.append("*优惠剩余*: `" + service.get(0).text() + "`\n");
               // System.out.println(service.attr("title"));
+            } else {
+              Elements icon = tr.getElementsByTag("img");
+              if (icon.size() != 0) {
+                sb.append("*优惠类型*: `"+ icon.get(0).attr("alt") +"`\n");
+              } else {
+                sb.append("*优惠类型*: `普通`\n");
+              }
             }
             break;
           }
@@ -144,8 +137,13 @@ public class SearchCallback implements Callback {
       }
 
       List<List<List<List<String>>>> columns = Arrays.asList(
-          Arrays.asList(Arrays.asList(Arrays.asList("🔗", CBK.TORRENT_INFO + ":" + cacheData("torrent_link", item.get("tid"))))),
-          Arrays.asList(Arrays.asList(Arrays.asList("❌", CBK.TORRENT_INFO + ":" + cacheData("close", null))))
+        Arrays.asList(Arrays.asList(
+          Arrays.asList("🔗", CBK.TORRENT_INFO + ":" + cacheData("torrent_link", item.get("tid"))),
+          Arrays.asList("施放魔法", CBK.TORRENT_INFO + ":" + cacheData("magic", item.get("tid")))
+        )),
+        Arrays.asList(Arrays.asList(
+          Arrays.asList("❌", CBK.TORRENT_INFO + ":" + cacheData("close", null))
+        ))
       );
 
       Integer torrentMsgID = (Integer) redis.get(Store.TORRENT_INFO_MESSAGE_ID_KEY);
