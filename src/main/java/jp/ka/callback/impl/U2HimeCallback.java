@@ -33,6 +33,7 @@ public class U2HimeCallback implements Callback {
   @Override
   public void execute(CallbackQuery query, Map<String, Object> cache) {
     Long gid = query.getMessage().getChatId();
+    Integer mid = query.getMessage().getMessageId();
 
     List<NameValuePair> params = new ArrayList<>();
     String[] split = query.getData().split(":");
@@ -41,6 +42,7 @@ public class U2HimeCallback implements Callback {
     params.add(new BasicNameValuePair("shbox_text", "U2娘" + text));
     params.add(new BasicNameValuePair("shout", "这不是搜索！"));
 
+    receiver.sendDel(gid, mid);
     receiver.sendCallbackAnswer(query.getId(), false, Text.CALLBACK_WAITING);
     try {
       RespPost resp = HttpUtils.postForm(gid, "/shoutbox.php?action=send&key=" + U2.pageKey, params);
