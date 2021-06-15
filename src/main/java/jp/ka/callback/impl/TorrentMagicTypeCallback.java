@@ -13,8 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -67,7 +65,7 @@ public class TorrentMagicTypeCallback implements Callback {
       RespPost resp = Store.context.getBean(MagicCallback.class).magic(gid, tid, params);
       if (resp.getCode() == 200) {
         Map<String, String> fee = (Map<String, String>) map.get("fee");
-        receiver.sendMsg(gid, "md", String.format("*魔法释放成功*\n\n费用: %s%s%s",
+        receiver.sendMsg(gid, "md", String.format("*魔法施放成功*\n\n费用: %s%s%s",
           fee.get("gold").equals("") ? "" : "\uD83E\uDD47" + fee.get("gold"),
           fee.get("silver").equals("") ? "" : "\uD83E\uDD48" + fee.get("silver"),
           fee.get("copper").equals("") ? "" : "\uD83E\uDD49" + fee.get("copper")

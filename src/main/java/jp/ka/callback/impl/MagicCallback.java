@@ -13,7 +13,6 @@ import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 @Component
 public class MagicCallback implements Callback {

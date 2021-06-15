@@ -235,7 +235,7 @@ public class SearchCommand implements Command {
       List<String> row = Arrays.asList(index, CMD.SEARCH + ":" + uuid);
       rows.add(row);
 
-      if ((i + 1) % 7 == 0) {
+      if ((i + 1) % (Store.SEARCH_RESULT_COUNT / 2) == 0) {
         columns.add(Arrays.asList(rows));
         rows = new ArrayList<>(); // 不能 clear，丢到 columns 里的是指针
       }

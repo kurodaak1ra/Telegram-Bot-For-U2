@@ -1,8 +1,6 @@
 package jp.ka.callback.impl;
 
 import jp.ka.callback.Callback;
-import jp.ka.config.Text;
-import jp.ka.controller.Receiver;
 import jp.ka.utils.RedisUtils;
 import jp.ka.utils.Store;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,9 +14,6 @@ public class TorrentLinkCallback implements Callback {
 
   @Autowired
   private RedisUtils redis;
-
-  @Autowired
-  private Receiver receiver;
 
   @Override
   public void execute(CallbackQuery query, Map<String, Object> cache) {
