@@ -14,8 +14,8 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.io.InputStream;
+import java.util.Arrays;
 
-@Slf4j
 @Component
 public class CaptchaCommand implements Command {
 
@@ -27,11 +27,7 @@ public class CaptchaCommand implements Command {
     Long gid = msg.getChatId();
 
     receiver.sendMsg(gid, "md", Text.WAITING, null);
-    try {
-      InputStream pic = HttpUtils.getPic(gid, "/captcha.php?sid=" + Math.random());
-      receiver.sendDoc(gid, "", new InputFile().setMedia(pic, "captcha.png"));
-      Config.step = CMD.CAPTCHA;
-    } catch (HttpException e) { }
+    sendCaptcha(gid);
   }
 
   @Override
@@ -52,6 +48,18 @@ public class CaptchaCommand implements Command {
   @Override
   public Message prompt(Long gid) {
     return null;
+  }
+
+  public void sendCaptcha(Long gid) {
+    if (Config.session.containsKey(Config.cookieKey)) return;
+
+    try {
+      InputStream pic = HttpUtils.getPic(gid, "/captcha.php?sid=" + Math.random());
+      receiver.sendDoc(gid, "", "", new InputFile().setMedia(pic, "captcha.png"), Arrays.asList(Arrays.asList(Arrays.asList(
+        Arrays.asList("刷 🔄 新", CMD.CAPTCHA + ":refresh")
+      ))));
+      Config.step = CMD.CAPTCHA;
+    } catch (HttpException e) { }
   }
 
 }

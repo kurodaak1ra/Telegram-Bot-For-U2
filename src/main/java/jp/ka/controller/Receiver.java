@@ -135,9 +135,11 @@ public class Receiver extends TelegramLongPollingBot {
     }
   }
 
-  public Message sendDoc(Long gid, String caption, InputFile file) {
+  public Message sendDoc(Long gid, String parse, String caption, InputFile file, List<List<List<List<String>>>> columns) {
     SendDocument doc = new SendDocument();
     doc.setChatId(gid.toString());
+    if (!parse.equals("")) doc.setParseMode(parse.equals("md") ? "MarkdownV2" : "HTML");
+    if (Objects.nonNull(columns)) doc.setReplyMarkup(CommonUtils.createMarkup(columns));
     if (!caption.equals("")) doc.setCaption(caption);
     doc.setDocument(file);
 

@@ -96,13 +96,13 @@ public class SignCommand implements Command {
     try {
       List<List<List<List<String>>>> columns = new ArrayList<>();
       for (Map.Entry<String, String> entry : options.entrySet()) {
-        String uuid = cacheData(mark, "item", params, entry);
-        List<List<List<String>>> column = Arrays.asList(Arrays.asList(Arrays.asList(entry.getKey(), CMD.SIGN + ":" + uuid)));
-        columns.add(column);
+        columns.add(Arrays.asList(Arrays.asList(
+          Arrays.asList(entry.getKey(), CMD.SIGN + ":" + cacheData(mark, "item", params, entry))
+        )));
       }
-      String refreshUUID = cacheData(mark, "refresh", null, null);
-      List<List<List<String>>> refreshColumn = Arrays.asList(Arrays.asList(Arrays.asList("刷 🔄 新", CMD.SIGN + ":" + refreshUUID)));
-      columns.add(refreshColumn);
+      columns.add(Arrays.asList(Arrays.asList(
+        Arrays.asList("刷 🔄 新", CMD.SIGN + ":" + cacheData(mark, "refresh", null, null))
+      )));
 
       InputStream pic = HttpUtils.getPic(gid, "/" + img);
       if (Objects.isNull(mid)) {
