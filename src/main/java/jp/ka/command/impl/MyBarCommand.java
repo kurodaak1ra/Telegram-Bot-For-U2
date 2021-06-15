@@ -36,7 +36,7 @@ public class MyBarCommand implements Command {
 
       List<List<List<List<String>>>> columns = Arrays.asList(Arrays.asList(Arrays.asList(Arrays.asList("点击查看原图", Config.U2Domain + "/mybar.php?namered=229&namegreen=77&namex=5&nameblue=38&upx=90&upy=3&userid=" + U2.uid + ".png"))));
 
-      receiver.sendImg(gid, "", new InputFile(img, "mybar.png"), columns);
+      receiver.sendImg(gid, "", "", new InputFile(img, "mybar.png"), columns);
     } catch (HttpException e) { }
   }
 

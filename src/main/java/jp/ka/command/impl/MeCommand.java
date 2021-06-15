@@ -8,7 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Message;
-import org.telegram.telegrambots.meta.api.objects.Update;
 
 @Slf4j
 @Component
@@ -37,7 +36,7 @@ public class MeCommand implements Command {
 
   @Override
   public String description() {
-    return "个人信息";
+    return "签名条";
   }
 
   @Override

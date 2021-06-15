@@ -108,7 +108,7 @@ public class SignCommand implements Command {
       if (Objects.isNull(mid)) {
         InputFile file = new InputFile();
         file.setMedia(pic, "sign pic.png");
-        Message message = receiver.sendImg(gid, "", file, columns);
+        Message message = receiver.sendImg(gid, "", "", file, columns);
         redis.set(Store.SIGN_MESSAGE_ID_KEY, message.getMessageId(), Store.TTL);
       } else {
         InputMedia media = new InputMedia() {

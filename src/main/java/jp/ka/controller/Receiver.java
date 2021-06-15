@@ -150,9 +150,10 @@ public class Receiver extends TelegramLongPollingBot {
     return null;
   }
 
-  public Message sendImg(Long gid, String caption, InputFile img, List<List<List<List<String>>>> columns) {
+  public Message sendImg(Long gid, String parse, String caption, InputFile img, List<List<List<List<String>>>> columns) {
     SendPhoto photo = new SendPhoto();
     photo.setChatId(gid.toString());
+    if (!parse.equals("")) photo.setParseMode(parse.equals("md") ? "MarkdownV2" : "HTML");
     if (!caption.equals("")) photo.setCaption(caption);
     if (Objects.nonNull(columns)) photo.setReplyMarkup(CommonUtils.createMarkup(columns));
     photo.setPhoto(img);
