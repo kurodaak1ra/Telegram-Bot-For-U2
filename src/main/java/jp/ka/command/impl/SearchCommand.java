@@ -132,7 +132,7 @@ public class SearchCommand implements Command {
         Element last = linkBtn.get(linkBtn.size() - 1).getElementsByTag("b").get(0);
         Integer max = new Integer(last.text().split("-")[1].trim());
 
-        pageSize = (max / limit) * (max % limit);
+        pageSize = (max / limit) + (max % limit == 0 ? 0 : 1);
       }
       options.put("page_size", pageSize);
       redis.set(Store.SEARCH_OPTIONS_KEY, options, Store.TTL);
@@ -269,13 +269,13 @@ public class SearchCommand implements Command {
     return columns;
   }
 
-  private String cacheData(String source, String mark, Integer page, Integer index) {
+  private String cacheData(String source, String mark, Integer offset, Integer index) {
     String uuid = UUID.randomUUID().toString();
 
     HashMap<String, Object> map = new HashMap<>();
     map.put("source", source);
     map.put("mark", mark);
-    if (Objects.nonNull(page)) map.put("page", page);
+    if (Objects.nonNull(offset)) map.put("offset", offset);
     if (Objects.nonNull(index)) map.put("index", index);
     redis.set(uuid, map, Store.TTL);
 

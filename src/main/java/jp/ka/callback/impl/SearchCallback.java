@@ -38,8 +38,8 @@ public class SearchCallback implements Callback {
     String mark = (String) cache.get("mark");
     String cacheMark = (String) redis.get(Store.SEARCH_MARK_KEY);
     List<Map<String, String>> items = (List<Map<String, String>>) redis.get(Store.SEARCH_DATA_KEY);
-    Map<String, Object> option = (Map<String, Object>) redis.get(Store.SEARCH_OPTIONS_KEY);
-    if (!mark.equals(cacheMark) || Objects.isNull(items) || Objects.isNull(option)) {
+    Map<String, Object> options = (Map<String, Object>) redis.get(Store.SEARCH_OPTIONS_KEY);
+    if (!mark.equals(cacheMark) || Objects.isNull(items) || Objects.isNull(options)) {
       receiver.sendDel(gid, query.getMessage().getMessageId());
       receiver.sendCallbackAnswer(query.getId(), false, Text.CALLBACK_EXPIRE);
       return;
@@ -52,7 +52,7 @@ public class SearchCallback implements Callback {
 
     receiver.sendCallbackAnswer(query.getId(), false, Text.CALLBACK_WAITING);
     String source = (String) cache.get("source");
-    Integer page = (Integer) cache.get("page");
+    Integer offset = (Integer) cache.get("offset");
     switch (source) {
       case "item": {
         Integer index = (Integer) cache.get("index");
@@ -60,19 +60,21 @@ public class SearchCallback implements Callback {
         break;
       }
       case "prev": {
-        prevNext(gid, page);
+        prevNext(gid, offset);
         break;
       }
       case "next": {
-        if (items.size() - (Store.SEARCH_RESULT_COUNT * page) < Store.SEARCH_RESULT_COUNT) {
-          int pageSize = (int) option.get("page_size");
-          int offset = (int) option.get("offset") + 1;
-          if (offset < pageSize) {
-            option.put("offset", offset);
+        int pageSize = items.size() / Store.SEARCH_RESULT_COUNT + (items.size() % Store.SEARCH_RESULT_COUNT == 0 ? 0 : 1);
+        if (offset + 1 == pageSize) {
+          int webPageSize = (int) options.get("page_size");
+          int webOffset = (int) options.get("offset") + 1;
+          if (webOffset < webPageSize) {
+            options.put("offset", webOffset);
+            redis.set(Store.SEARCH_OPTIONS_KEY, options, Store.TTL);
             Store.context.getBean(SearchCommand.class).initData(gid);
           }
         }
-        prevNext(gid, page);
+        prevNext(gid, offset);
         break;
       }
     }

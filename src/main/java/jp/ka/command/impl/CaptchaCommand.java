@@ -29,7 +29,7 @@ public class CaptchaCommand implements Command {
     receiver.sendMsg(gid, "md", Text.WAITING, null);
     try {
       InputStream pic = HttpUtils.getPic(gid, "/captcha.php?sid=" + Math.random());
-      receiver.sendDoc(gid, "登陆验证码", new InputFile().setMedia(pic, "captcha.png"));
+      receiver.sendDoc(gid, "", new InputFile().setMedia(pic, "captcha.png"));
       Config.step = CMD.CAPTCHA;
     } catch (HttpException e) { }
   }

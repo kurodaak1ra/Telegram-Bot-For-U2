@@ -81,7 +81,7 @@ public class SignCallback implements Callback {
       String res = td.get(2).getElementsByTag("fieldset").get(0).getElementsByTag("span").get(0).text().replaceAll("\\(", "").replaceAll("\\)", "").substring(0, 4);
       String uc = td.get(1).getElementsByTag("b").get(3).text();
 
-      receiver.sendMsg(gid, "md", String.format("*%s*\n*奖励UCoin*: `%s`", res, uc), null);
+      receiver.sendMsg(gid, "md", String.format("*%s*\n\n奖励UCoin: `%s`", res, uc), null);
     } catch (HttpException e) { }
   }
 
