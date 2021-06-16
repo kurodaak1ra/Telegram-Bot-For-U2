@@ -2,15 +2,14 @@ package jp.ka.controller;
 
 import jp.ka.command.Command;
 import jp.ka.config.Config;
+import jp.ka.config.Text;
 import jp.ka.utils.Store;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 @Component
 public class CommandResolver {
@@ -44,6 +43,13 @@ public class CommandResolver {
           Message prompt = command.prompt(msg.getChatId());
           if (Objects.nonNull(prompt)) return;
         }
+        Message waiting = Store.context.getBean(Receiver.class).sendMsg(msg.getChatId(), "md", Text.WAITING, null);
+        new Timer().schedule(new TimerTask() {
+          @Override
+          public void run() {
+          Store.context.getBean(Receiver.class).sendDel(msg.getChatId(), waiting.getMessageId());
+          }
+        }, 2000);
         command.execute(msg);
         return;
       }

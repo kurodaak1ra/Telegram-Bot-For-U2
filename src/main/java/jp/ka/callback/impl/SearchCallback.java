@@ -7,11 +7,11 @@ import jp.ka.config.Config;
 import jp.ka.config.Text;
 import jp.ka.config.U2;
 import jp.ka.controller.Receiver;
-import jp.ka.exception.HttpException;
 import jp.ka.utils.CommonUtils;
 import jp.ka.utils.HttpUtils;
 import jp.ka.utils.RedisUtils;
 import jp.ka.utils.Store;
+import lombok.SneakyThrows;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
@@ -32,25 +32,21 @@ public class SearchCallback implements Callback {
   private Receiver receiver;
 
   @Override
-  public void execute(CallbackQuery query, Map<String, Object> cache) {
+  public void execute(CallbackQuery query, String cbData, Map<String, Object> cache) {
     Long gid = query.getMessage().getChatId();
 
-    String mark = (String) cache.get("mark");
-    String cacheMark = (String) redis.get(Store.SEARCH_MARK_KEY);
     List<Map<String, String>> items = (List<Map<String, String>>) redis.get(Store.SEARCH_DATA_KEY);
     Map<String, Object> options = (Map<String, Object>) redis.get(Store.SEARCH_OPTIONS_KEY);
-    if (!mark.equals(cacheMark) || Objects.isNull(items) || Objects.isNull(options)) {
+    String mark = (String) cache.get("mark");
+    if (!mark.equals(Store.SEARCH_MARK) || Objects.isNull(items) || Objects.isNull(options)) {
       receiver.sendDel(gid, query.getMessage().getMessageId());
-      receiver.sendCallbackAnswer(query.getId(), false, Text.CALLBACK_EXPIRE);
+      receiver.sendCallbackAnswer(query.getId(), true, Text.CALLBACK_EXPIRE);
       return;
     }
 
     redis.expired(Store.SEARCH_DATA_KEY, Store.TTL);
-    redis.expired(Store.SEARCH_MARK_KEY, Store.TTL);
     redis.expired(Store.SEARCH_OPTIONS_KEY, Store.TTL);
-    redis.expired(Store.SEARCH_MESSAGE_ID_KEY, Store.TTL);
 
-    receiver.sendCallbackAnswer(query.getId(), false, Text.CALLBACK_WAITING);
     String source = (String) cache.get("source");
     Integer offset = (Integer) cache.get("offset");
     switch (source) {
@@ -85,91 +81,87 @@ public class SearchCallback implements Callback {
     return CBK.SEARCH;
   }
 
+  @SneakyThrows
   private void item(Long gid, Map<String, String> item) {
-    try {
-      RespGet resp = HttpUtils.get(gid, "/details.php?id=" + item.get("tid") + "&hit=1");
-      Elements trs = resp.getHtml().getElementById("outer").getElementsByTag("table").get(0).getElementsByTag("tr");
+    RespGet resp = HttpUtils.get(gid, "/details.php?id=" + item.get("tid") + "&hit=1");
+    Elements trs = resp.getHtml().getElementById("outer").getElementsByTag("table").get(0).getElementsByTag("tr");
 
-      StringBuilder sb = new StringBuilder();
-      sb.append(String.format("[%s](%s/details.php?id=%s&hit=1)\n", CommonUtils.formatMD(item.get("name")), Config.U2Domain, item.get("tid")));
-      for (int i = 0; i < trs.size(); i++) {
-        Element tr = trs.get(i);
-        String title = trs.get(i).getElementsByTag("td").get(0).text();
-        switch (title) {
-          case "下载": {
-            Element download = tr.getElementsByTag("a").get(1);
-            U2.passKey = download.attr("href").split("&")[1].split("=")[1];
-            break;
-          }
-          case "副标题": {
-            Element td = tr.getElementsByTag("td").get(1);
-            sb.append("_" + CommonUtils.formatMD(td.text()) + "_\n");
-            break;
-          }
-          case "基本信息": {
-            List<TextNode> tn = tr.getElementsByTag("td").get(1).textNodes();
-            sb.append("\n*TID*: `" + item.get("tid") + "`");
-            sb.append("\n*大小*: `" + tn.get(2).text().trim() + "`");
-            sb.append("\n*类型*: `" + tn.get(3).text().trim() + "`");
-            Element release = tr.getElementsByTag("time").get(0);
-            sb.append("\n*发布时间*: `" + release.text() + "`");
-            // System.out.println(release.attr("title"));
-            break;
-          }
-          case "流量优惠": {
-            Elements service = tr.getElementsByTag("time");
-            if (service.size() != 0) {
-              sb.append("\n*优惠类型*: `" + CommonUtils.torrentStatus(item.get("status"), item.get("status_promotion_upload"), item.get("status_promotion_download")) + "`");
-              sb.append("\n*优惠剩余*: `" + service.get(0).text() + "`");
-              // System.out.println(service.attr("title"));
+    StringBuilder sb = new StringBuilder();
+    sb.append(String.format("[%s](%s/details.php?id=%s&hit=1)\n", CommonUtils.formatMD(item.get("name")), Config.U2Domain, item.get("tid")));
+    for (int i = 0; i < trs.size(); i++) {
+      Element tr = trs.get(i);
+      String title = trs.get(i).getElementsByTag("td").get(0).text();
+      switch (title) {
+        case "下载": {
+          Element download = tr.getElementsByTag("a").get(1);
+          U2.passKey = download.attr("href").split("&")[1].split("=")[1];
+          break;
+        }
+        case "副标题": {
+          Element td = tr.getElementsByTag("td").get(1);
+          sb.append("_" + CommonUtils.formatMD(td.text()) + "_\n");
+          break;
+        }
+        case "基本信息": {
+          List<TextNode> tn = tr.getElementsByTag("td").get(1).textNodes();
+          sb.append("\n*TID*: `" + item.get("tid") + "`");
+          sb.append("\n*大小*: `" + tn.get(2).text().trim() + "`");
+          sb.append("\n*类型*: `" + tn.get(3).text().trim() + "`");
+          Element release = tr.getElementsByTag("time").get(0);
+          sb.append("\n*发布时间*: `" + release.text() + "`");
+          // System.out.println(release.attr("title"));
+          break;
+        }
+        case "流量优惠": {
+          Elements service = tr.getElementsByTag("time");
+          if (service.size() != 0) {
+            sb.append("\n*优惠类型*: `" + CommonUtils.torrentStatus(item.get("status"), item.get("status_promotion_upload"), item.get("status_promotion_download")) + "`");
+            sb.append("\n*优惠剩余*: `" + service.get(0).text() + "`");
+            // System.out.println(service.attr("title"));
+          } else {
+            Elements icon = tr.getElementsByTag("img");
+            if (icon.size() != 0) {
+              sb.append("\n*优惠类型*: `"+ icon.get(0).attr("alt") +"`");
             } else {
-              Elements icon = tr.getElementsByTag("img");
-              if (icon.size() != 0) {
-                sb.append("\n*优惠类型*: `"+ icon.get(0).attr("alt") +"`");
-              } else {
-                sb.append("\n*优惠类型*: `普通`");
-              }
+              sb.append("\n*优惠类型*: `普通`");
             }
-            break;
           }
-          case "活力度": {
-            Elements b = tr.getElementsByTag("b");
-            if (b.size() == 1) continue;
-            String averageProcess = tr.getElementsByTag("td").textNodes().get(1).text().replaceAll("\\(", "").replaceAll("\\)", "").trim();
-            sb.append("\n*平均进度*: `" + averageProcess + "`");
-            sb.append("\n*平均速度*: `" + b.get(1).text() + "`");
-            sb.append("\n*总速度*: `" + b.get(2).text() + "`");
-            break;
-          }
+          break;
+        }
+        case "活力度": {
+          Elements b = tr.getElementsByTag("b");
+          if (b.size() == 1) continue;
+          String averageProcess = tr.getElementsByTag("td").textNodes().get(1).text().replaceAll("\\(", "").replaceAll("\\)", "").trim();
+          sb.append("\n*平均进度*: `" + averageProcess + "`");
+          sb.append("\n*平均速度*: `" + b.get(1).text() + "`");
+          sb.append("\n*总速度*: `" + b.get(2).text() + "`");
+          break;
         }
       }
+    }
 
-      List<List<List<List<String>>>> columns = Arrays.asList(
-        Arrays.asList(Arrays.asList(
-          Arrays.asList("🔗", CBK.TORRENT_INFO + ":" + cacheData("torrent_link", item.get("tid"))),
-          Arrays.asList("施放魔法", CBK.TORRENT_INFO + ":" + cacheData("magic", item.get("tid")))
-        )),
-        Arrays.asList(Arrays.asList(
-          Arrays.asList("❌", CBK.TORRENT_INFO + ":" + cacheData("close", null))
-        ))
-      );
+    List<List<List<List<String>>>> columns = Arrays.asList(
+      Arrays.asList(Arrays.asList(
+        Arrays.asList("🔗", CBK.TORRENT_INFO + ":" + cacheData("torrent_link", item.get("tid"))),
+        Arrays.asList("施放魔法", CBK.TORRENT_INFO + ":" + cacheData("magic", item.get("tid")))
+      )),
+      Arrays.asList(Arrays.asList(
+        Arrays.asList("❌", CBK.TORRENT_INFO + ":" + cacheData("close", null))
+      ))
+    );
 
-      Integer torrentMsgID = (Integer) redis.get(Store.TORRENT_INFO_MESSAGE_ID_KEY);
-      if (Objects.isNull(torrentMsgID)) {
-        Message msg = receiver.sendMsg(gid, "md", sb.toString(), columns);
-        redis.set(Store.TORRENT_INFO_MESSAGE_ID_KEY, msg.getMessageId(), Store.TTL);
-      } else {
-        receiver.sendEditMsg(gid, torrentMsgID, "md", sb.toString(), columns);
-        redis.expired(Store.TORRENT_INFO_MESSAGE_ID_KEY, Store.TTL);
-      }
-    } catch (HttpException e) { }
+    if (Store.TORRENT_INFO_MESSAGE_ID == -1) {
+      Message msg = receiver.sendMsg(gid, "md", sb.toString(), columns);
+      Store.TORRENT_INFO_MESSAGE_ID = msg.getMessageId();
+    } else {
+      receiver.sendEditMsg(gid, Store.TORRENT_INFO_MESSAGE_ID, "md", sb.toString(), columns);
+    }
   }
 
   private void prevNext(Long gid, int page) {
-    Integer torrentInfoMsgID = (Integer) redis.get(Store.TORRENT_INFO_MESSAGE_ID_KEY);
-    if (Objects.nonNull(torrentInfoMsgID)) {
-      receiver.sendDel(gid, torrentInfoMsgID);
-      redis.del(Store.TORRENT_INFO_MESSAGE_ID_KEY);
+    if (Store.TORRENT_INFO_MESSAGE_ID != -1) {
+      receiver.sendDel(gid, Store.TORRENT_INFO_MESSAGE_ID);
+      Store.TORRENT_INFO_MESSAGE_ID = -1;
     }
 
     Store.context.getBean(SearchCommand.class).sendSearch(gid, page);

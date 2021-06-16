@@ -91,14 +91,14 @@ public class Receiver extends TelegramLongPollingBot {
   }
 
   public Message sendMsg(Long gid, String parse, String text, List<List<List<List<String>>>> columns) {
-    SendMessage message = new SendMessage(); // Create a SendMessage object with mandatory fields
-    message.setChatId(gid.toString());
-    message.setText(text);
-    if (Objects.nonNull(columns)) message.setReplyMarkup(CommonUtils.createMarkup(columns));
-    if (!parse.equals("")) message.setParseMode(parse.equals("md") ? "MarkdownV2" : "HTML");
+    SendMessage msg = new SendMessage(); // Create a SendMessage object with mandatory fields
+    msg.setChatId(gid.toString());
+    msg.setText(text);
+    if (Objects.nonNull(columns)) msg.setReplyMarkup(CommonUtils.createMarkup(columns));
+    if (!parse.equals("")) msg.setParseMode(parse.equals("md") ? "MarkdownV2" : "HTML");
 
     try {
-      return execute(message); // Call method to send the message
+      return execute(msg); // Call method to send the message
     } catch (TelegramApiException e) {
       log.error("[sendMsg -> execute()]", e);
     }

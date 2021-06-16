@@ -2,7 +2,6 @@ package jp.ka.callback.impl;
 
 import jp.ka.callback.Callback;
 import jp.ka.controller.Receiver;
-import jp.ka.utils.RedisUtils;
 import jp.ka.utils.Store;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -14,31 +13,25 @@ import java.util.*;
 public class TorrentMagicHoursCallback implements Callback {
 
   @Autowired
-  private RedisUtils redis;
-
-  @Autowired
   private Receiver receiver;
 
   @Override
-  public void execute(CallbackQuery query, Map<String, Object> cache) {
+  public void execute(CallbackQuery query, String cbData, Map<String, Object> cache) {
     Long gid = query.getMessage().getChatId();
     Integer mid = query.getMessage().getMessageId();
 
-    String source = (String) cache.get("source");
-    String tid = (String) cache.get("tid");
-    String forr = (String) cache.get("for");
-    switch (source) {
-      case "data": {
-        sendBtn(gid, mid, tid, forr, (Integer) cache.get("hours"));
-        break;
-      }
+    switch (cbData) {
       case "pre": {
-        Store.context.getBean(TorrentInfoCallback.class).magic(gid, mid, tid);
+        Store.context.getBean(TorrentInfoCallback.class).magic(gid, mid);
         break;
       }
       case "close": {
-        redis.del(Store.TORRENT_INFO_MESSAGE_ID_KEY);
+        Store.TORRENT_INFO_MESSAGE_ID = -1;
         break;
+      }
+      default: {
+        Store.TORRENT_MAGIC_HOURS = cbData;
+        sendBtn(gid, mid);
       }
     }
   }
@@ -48,35 +41,21 @@ public class TorrentMagicHoursCallback implements Callback {
     return CBK.TORRENT_MAGIC_HOURS;
   }
 
-  private String cacheData(String source, String tid, String forr, Integer hours, Integer type) {
-    String uuid = UUID.randomUUID().toString();
-
-    HashMap<String, Object> map = new HashMap<>();
-    map.put("source", source);
-    if (Objects.nonNull(tid)) map.put("tid", tid);
-    if (Objects.nonNull(forr)) map.put("for", forr);
-    if (Objects.nonNull(tid)) map.put("hours", hours);
-    if (Objects.nonNull(tid)) map.put("type", type);
-    redis.set(uuid, map, Store.TTL);
-
-    return uuid;
-  }
-
-  public void sendBtn(Long gid, Integer mid, String tid, String forr, Integer hours) {
+  public void sendBtn(Long gid, Integer mid) {
     receiver.sendEditMsg(gid, mid, "md", "*请选择优惠效果*", Arrays.asList(
       Arrays.asList(Arrays.asList(
-        Arrays.asList("Free", CBK.TORRENT_MAGIC_TYPE + ":" + cacheData("data", tid, forr, hours, 2)),
-        Arrays.asList("30%", CBK.TORRENT_MAGIC_TYPE + ":" + cacheData("data", tid, forr, hours, 7)),
-        Arrays.asList("50%", CBK.TORRENT_MAGIC_TYPE + ":" + cacheData("data", tid, forr, hours, 5))
+        Arrays.asList("Free", CBK.TORRENT_MAGIC_TYPE + ":2"),
+        Arrays.asList("30%", CBK.TORRENT_MAGIC_TYPE + ":7"),
+        Arrays.asList("50%", CBK.TORRENT_MAGIC_TYPE + ":5")
       )),
       Arrays.asList(Arrays.asList(
-        Arrays.asList("2X", CBK.TORRENT_MAGIC_TYPE + ":" + cacheData("data", tid, forr, hours, 3)),
-        Arrays.asList("2X 50%", CBK.TORRENT_MAGIC_TYPE + ":" + cacheData("data", tid, forr, hours, 6)),
-        Arrays.asList("2X Free", CBK.TORRENT_MAGIC_TYPE + ":" + cacheData("data", tid, forr, hours, 4))
+        Arrays.asList("2X", CBK.TORRENT_MAGIC_TYPE + ":3"),
+        Arrays.asList("2X 50%", CBK.TORRENT_MAGIC_TYPE + ":6"),
+        Arrays.asList("2X Free", CBK.TORRENT_MAGIC_TYPE + ":4")
       )),
       Arrays.asList(Arrays.asList(
-        Arrays.asList("⬅️ 上一步", CBK.TORRENT_MAGIC_TYPE + ":" + cacheData("pre", null, null, null, null)),
-        Arrays.asList("❌", CBK.TORRENT_MAGIC_TYPE + ":" + cacheData("close", null, null, null, null))
+        Arrays.asList("⬅️ 上一步", CBK.TORRENT_MAGIC_TYPE + ":pre"),
+        Arrays.asList("❌", CBK.TORRENT_MAGIC_TYPE + ":close")
       ))
     ));
   }

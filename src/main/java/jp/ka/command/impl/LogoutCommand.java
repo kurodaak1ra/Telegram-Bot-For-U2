@@ -2,15 +2,13 @@ package jp.ka.command.impl;
 
 import jp.ka.command.Command;
 import jp.ka.config.Config;
-import jp.ka.config.Text;
 import jp.ka.config.U2;
 import jp.ka.controller.Receiver;
-import jp.ka.exception.HttpException;
 import jp.ka.utils.HttpUtils;
+import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Message;
-import org.telegram.telegrambots.meta.api.objects.Update;
 
 @Component
 public class LogoutCommand implements Command {
@@ -18,16 +16,14 @@ public class LogoutCommand implements Command {
   @Autowired
   private Receiver receiver;
 
+  @SneakyThrows
   @Override
   public void execute(Message msg) {
     Long gid = msg.getChatId();
 
-    receiver.sendMsg(gid, "md", Text.WAITING, null);
-    try {
-      Config.session.clear();
-      HttpUtils.get(gid, "/logout.php?key=" + U2.pageKey);
-      receiver.sendMsg(gid, "md", "*登出成功！*", null);
-    } catch (HttpException e) { }
+    Config.session.clear();
+    HttpUtils.get(gid, "/logout.php?key=" + U2.pageKey);
+    receiver.sendMsg(gid, "md", "*登出成功！*", null);
   }
 
   @Override

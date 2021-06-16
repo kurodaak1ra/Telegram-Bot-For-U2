@@ -57,7 +57,7 @@ public class Config implements CommandLineRunner, ApplicationListener<ContextRef
         System.exit(0);
       }
       Config.session.put(cookieKey, cookieValue);
-      new CommandTools().setUserData(uid);
+      CommandTools.userInfo(uid);
     }
     log.info("[Inject Cookie] {}", Config.session);
   }

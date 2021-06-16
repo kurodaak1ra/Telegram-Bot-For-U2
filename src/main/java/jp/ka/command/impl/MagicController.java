@@ -64,12 +64,12 @@ public class MagicController implements Command {
     Map<String, String> fee = (Map<String, String>) magic.get("fee");
 
     receiver.sendMsg(gid, "md", String.format("*预计费用*: `%s%s%s`",
-        fee.get("gold").equals("") ? "" : "\uD83E\uDD47" + fee.get("gold"),
-        fee.get("silver").equals("") ? "" : "\uD83E\uDD48" + fee.get("silver"),
-        fee.get("copper").equals("") ? "" : "\uD83E\uDD49" + fee.get("copper")
+      fee.get("gold").equals("") ? "" : "\uD83E\uDD47" + fee.get("gold"),
+      fee.get("silver").equals("") ? "" : "\uD83E\uDD48" + fee.get("silver"),
+      fee.get("copper").equals("") ? "" : "\uD83E\uDD49" + fee.get("copper")
     ), Arrays.asList(
-        Arrays.asList(Arrays.asList(Arrays.asList("施放魔法", CMD.MAGIC + ":" + cacheData("params", params)))),
-        Arrays.asList(Arrays.asList(Arrays.asList("❌", CMD.MAGIC + ":" + cacheData("close", null))))
+      Arrays.asList(Arrays.asList(Arrays.asList("施放魔法", CMD.MAGIC + ":" + cacheData("params", params)))),
+      Arrays.asList(Arrays.asList(Arrays.asList("❌", CMD.MAGIC + ":" + cacheData("close", null))))
     ));
   }
 
@@ -132,7 +132,7 @@ public class MagicController implements Command {
     params.add(new BasicNameValuePair("promotion", promote));
     params.add(new BasicNameValuePair("ur", ur));
     params.add(new BasicNameValuePair("dr", dr));
-    params.add(new BasicNameValuePair("comment", Store.ADV));
+    params.add(new BasicNameValuePair("comment", Store.ADV.replace("\n", " ")));
     map.put("params", params);
 
     try {

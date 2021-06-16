@@ -131,11 +131,11 @@ public class HttpUtils implements ApplicationListener<ContextRefreshedEvent> {
       byte[] result = EntityUtils.toByteArray(response.getEntity());
       int code = response.getStatusLine().getStatusCode();
       log.info("[Session] {}", Config.session);
-      log.info("[Http Response <"+ code +"> <"+ request.getURI() +">]\n\n{}\n", response);
+      log.info("[{} Response <{}> <{}>]\n\n{}\n", request.getMethod(), code, request.getURI(), response);
       ParseHTML html = isHTML(result);
       if (code == 200 && Objects.nonNull(html) && html.getIs()) isLogin(gid, html.getHtml());
-      // log.info("[Http Response Body <"+ code +"> <"+ request.getURI() +">]\n\n{}\n", new String(result));
-      if (Objects.nonNull(html) && !html.getIs()) log.info("[Http Response Body <"+ code +"> <"+ request.getURI() +">]\n\n{}\n", new String(result));
+      // log.info("[{} Response Body <{}> <{}>]\n\n{}\n", request.getMethod(), code, request.getURI(), new String(result));
+      if (Objects.nonNull(html) && !html.getIs()) log.info("[{} Response Body <{}> <{}>]\n\n{}\n", request.getMethod(), code, request.getURI(), new String(result));
       if (code >= 400 && code < 500) {
         applicationContext.getBean(Receiver.class).sendMsg(gid, "md", Text.NOT_FOUND, null);
         throw new HttpException(code, result.toString());

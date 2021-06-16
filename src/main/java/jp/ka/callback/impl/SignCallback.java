@@ -24,34 +24,31 @@ import java.util.Map;
 public class SignCallback implements Callback {
 
   @Autowired
-  private RedisUtils redis;
-
-  @Autowired
   private Receiver receiver;
 
   @Override
-  public void execute(CallbackQuery query, Map<String, Object> cache) {
+  public void execute(CallbackQuery query, String cbData, Map<String, Object> cache) {
+    String qid = query.getId();
     Long gid = query.getMessage().getChatId();
+    Integer mid = query.getMessage().getMessageId();
 
     String mark = (String) cache.get("mark");
-    String cacheMark = (String) redis.get(Store.SIGN_MESSAGE_MARK_KEY);
-    if (!mark.equals(cacheMark)) {
-      receiver.sendDel(gid, query.getMessage().getMessageId());
-      receiver.sendCallbackAnswer(query.getId(), false, Text.CALLBACK_EXPIRE);
+    if (!mark.equals(Store.SIGN_MESSAGE_MARK)) {
+      receiver.sendDel(gid, mid);
+      receiver.sendCallbackAnswer(qid, true, Text.CALLBACK_EXPIRE);
       return;
     }
 
     String source = (String) cache.get("source");
     switch (source) {
       case "item": {
-        receiver.sendDel(gid, query.getMessage().getMessageId());
-        receiver.sendCallbackAnswer(query.getId(), false, Text.CALLBACK_WAITING);
+        receiver.sendDel(gid, mid);
         Map<String, String> data = (Map<String, String>) cache.get("data");
         item(gid, data);
         break;
       }
       case "refresh": {
-        receiver.sendCallbackAnswer(query.getId(), false, Text.CALLBACK_REFRESH);
+        receiver.sendCallbackAnswer(qid, false, Text.CALLBACK_REFRESH);
         refresh(gid);
         break;
       }

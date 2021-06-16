@@ -6,6 +6,7 @@ public class U2 {
   public static String username;
   public static String pageKey;
   public static String passKey;
+
   public static String shareRate;
   public static String uploads;
   public static String downloads;

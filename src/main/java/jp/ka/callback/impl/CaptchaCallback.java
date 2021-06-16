@@ -2,6 +2,7 @@ package jp.ka.callback.impl;
 
 import jp.ka.callback.Callback;
 import jp.ka.command.impl.CaptchaCommand;
+import jp.ka.config.Config;
 import jp.ka.controller.Receiver;
 import jp.ka.utils.Store;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,12 +18,17 @@ public class CaptchaCallback implements Callback {
   private Receiver receiver;
 
   @Override
-  public void execute(CallbackQuery query, Map<String, Object> cache) {
+  public void execute(CallbackQuery query, String cbData, Map<String, Object> cache) {
     Long gid = query.getMessage().getChatId();
     Integer mid = query.getMessage().getMessageId();
 
-    receiver.sendDel(gid, mid);
-    Store.context.getBean(CaptchaCommand.class).sendCaptcha(gid);
+    switch (cbData) {
+      case "refresh": {
+        receiver.sendDel(gid, mid);
+        if (Config.session.containsKey(Config.cookieKey)) return;
+        Store.context.getBean(CaptchaCommand.class).sendCaptcha(gid);
+      }
+    }
   }
 
   @Override

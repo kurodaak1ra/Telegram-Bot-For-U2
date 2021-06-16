@@ -1,23 +1,16 @@
 package jp.ka.command.impl;
 
+import com.google.common.base.Functions;
+import com.google.common.collect.Lists;
 import jp.ka.command.Command;
-import jp.ka.config.U2;
 import jp.ka.controller.Receiver;
-import jp.ka.utils.RedisUtils;
 import jp.ka.utils.Store;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Message;
-import org.telegram.telegrambots.meta.api.objects.Update;
-
-import java.util.List;
-import java.util.Objects;
 
 @Component
 public class TransferInfoCommand implements Command {
-
-  @Autowired
-  private RedisUtils redis;
 
   @Autowired
   private Receiver receiver;
@@ -26,10 +19,8 @@ public class TransferInfoCommand implements Command {
   public void execute(Message msg) {
     Long gid = msg.getChatId();
 
-    List<Object> list = (List<Object>) redis.get(Store.TRANSFER_DATA_KEY);
-    List<String> listIds = (List<String>)(List)list;
-    if (Objects.nonNull(list) && list.size() > 0) {
-      receiver.sendMsg(gid, "md", String.format("*当前等待用户*\n\n`%s`", String.join("\n", listIds)), null);
+    if (Store.TRANSFER_LIST.size() > 0) {
+      receiver.sendMsg(gid, "md", String.format("*当前等待用户*\n\n`%s`", String.join("\n", Lists.transform(Store.TRANSFER_LIST, Functions.toStringFunction()))), null);
     } else {
       receiver.sendMsg(gid, "md", "*没有等待用户*", null);
     }

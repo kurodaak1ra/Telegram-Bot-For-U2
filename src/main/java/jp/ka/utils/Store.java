@@ -2,6 +2,9 @@ package jp.ka.utils;
 
 import org.springframework.context.ApplicationContext;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Store {
 
   public static ApplicationContext context;
@@ -10,18 +13,25 @@ public class Store {
 
   public static final String ADV = "来自 Telegram Bot - U2 Tool Box\n\nDesigned by KA";
 
-  public static final String SIGN_MESSAGE_ID_KEY = "sign.message.id";
-  public static final String SIGN_MESSAGE_MARK_KEY = "sign.message.mark";
+  public static int CAPTCHA_MESSAGE_ID = -1;
 
-  public static final String TRANSFER_DATA_KEY = "transfer.data";
-  public static final String TRANSFER_MARK_KEY = "transfer.mark";
+  public static int SIGN_MESSAGE_ID = -1;
+  public static String SIGN_MESSAGE_MARK = "";
 
+  public static boolean TRANSFER_MARK = false;
+  public static List<Integer> TRANSFER_LIST = new ArrayList<>();
+
+  public static String SEARCH_MARK = "";
+  public static int SEARCH_MESSAGE_ID = -1;
   public static final int SEARCH_RESULT_COUNT = 10;
   public static final String SEARCH_DATA_KEY = "search.data";
-  public static final String SEARCH_MARK_KEY = "search.mark";
-  public static final String SEARCH_MESSAGE_ID_KEY = "search.message.id";
-  public static final String SEARCH_OPTIONS_KEY = "search.page";
+  public static final String SEARCH_OPTIONS_KEY = "search.options";
 
-  public static final String TORRENT_INFO_MESSAGE_ID_KEY = "torrent.info.message.id";
+  public static int TORRENT_INFO_MESSAGE_ID = -1;
+
+  public static String TORRENT_MAGIC_TID = "";
+  public static String TORRENT_MAGIC_FOR = "";
+  public static String TORRENT_MAGIC_HOURS = "";
+  public static String TORRENT_MAGIC_TYPE = "";
 
 }

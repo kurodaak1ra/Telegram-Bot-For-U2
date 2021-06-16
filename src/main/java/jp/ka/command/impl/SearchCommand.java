@@ -44,22 +44,19 @@ public class SearchCommand implements Command {
     HashMap<String, Object> map = new HashMap<>();
     map.put("keywords", keywords);
     map.put("offset", 0);
+    Store.SEARCH_MARK = UUID.randomUUID().toString();
     redis.set(Store.SEARCH_OPTIONS_KEY, map, Store.TTL);
-    redis.set(Store.SEARCH_MARK_KEY, UUID.randomUUID().toString(), Store.TTL);
     redis.set(Store.SEARCH_DATA_KEY, new ArrayList<Map<String, String>>(), Store.TTL);
 
-    Integer searchMsgID = (Integer) redis.get(Store.SEARCH_MESSAGE_ID_KEY);
-    if (Objects.nonNull(searchMsgID)) {
-      receiver.sendDel(gid, searchMsgID);
-      redis.del(Store.SEARCH_MESSAGE_ID_KEY);
+    if (Store.SEARCH_MESSAGE_ID != -1) {
+      receiver.sendDel(gid, Store.SEARCH_MESSAGE_ID);
+      Store.SEARCH_MESSAGE_ID = -1;
     }
-    Integer torrentInfoMsgID = (Integer) redis.get(Store.TORRENT_INFO_MESSAGE_ID_KEY);
-    if (Objects.nonNull(torrentInfoMsgID)) {
-      receiver.sendDel(gid, torrentInfoMsgID);
-      redis.del(Store.TORRENT_INFO_MESSAGE_ID_KEY);
+    if (Store.TORRENT_INFO_MESSAGE_ID != -1) {
+      receiver.sendDel(gid, Store.TORRENT_INFO_MESSAGE_ID);
+      Store.TORRENT_INFO_MESSAGE_ID = -1;
     }
 
-    receiver.sendMsg(gid, "md", Text.WAITING, null);
     boolean flag = initData(gid);
     if (flag) sendSearch(gid, 0);
   }
@@ -100,15 +97,9 @@ public class SearchCommand implements Command {
     return msg + tmpUnit;
   }
 
-  private String formatLength(int length, String str) {
-    for (int i = str.length(); i <= length; i++) str = " " + str;
-    return str;
-  }
-
   public boolean initData(Long gid) {
-    String mark = (String) redis.get(Store.SEARCH_MARK_KEY);
     Map<String, Object> options = (Map<String, Object>) redis.get(Store.SEARCH_OPTIONS_KEY);
-    if (Objects.isNull(mark) || Objects.isNull(options)) return false;
+    if (Objects.isNull(options)) return false;
 
     try {
       String keywords = null;
@@ -122,15 +113,15 @@ public class SearchCommand implements Command {
         return false;
       }
 
-      Element pagination = resp.getHtml().getElementById("outer").children().get(0).children().get(0).children().get(0).children().get(0).child(1);
+      Element pagination = resp.getHtml().getElementById("outer").getElementsByClass("embedded").get(0).children().get(1);
       Elements linkBtn = pagination.getElementsByTag("a");
       int pageSize = 1;
       if (linkBtn.size() != 0) {
         Element first = pagination.child(3).getElementsByTag("b").get(0);
-        Integer limit = new Integer(first.text().split("-")[1].trim());
+        Integer limit = Integer.valueOf(first.text().split("-")[1].trim());
 
         Element last = linkBtn.get(linkBtn.size() - 1).getElementsByTag("b").get(0);
-        Integer max = new Integer(last.text().split("-")[1].trim());
+        Integer max = Integer.valueOf(last.text().split("-")[1].trim());
 
         pageSize = (max / limit) + (max % limit == 0 ? 0 : 1);
       }
@@ -210,9 +201,8 @@ public class SearchCommand implements Command {
   }
 
   public void sendSearch(Long gid, int page) {
-    String mark = (String) redis.get(Store.SEARCH_MARK_KEY);
     List<Map<String, String>> items = (List<Map<String, String>>) redis.get(Store.SEARCH_DATA_KEY);
-    if (Objects.isNull(mark) || Objects.isNull(items)) return;
+    if (Objects.isNull(items)) return;
 
     StringBuilder sb = new StringBuilder();
     List<List<List<List<String>>>> columns = new ArrayList<>();
@@ -231,7 +221,7 @@ public class SearchCommand implements Command {
           Config.U2Domain + "/details.php?id=" + item.get("tid") + "&hit=1")
       );
 
-      String uuid = cacheData("item", mark, null, i);
+      String uuid = cacheData("item", Store.SEARCH_MARK, null, i);
       List<String> row = Arrays.asList(index, CMD.SEARCH + ":" + uuid);
       rows.add(row);
 
@@ -241,16 +231,12 @@ public class SearchCommand implements Command {
       }
     }
     if (rows.size() != 0) columns.add(Arrays.asList(rows));
-    List<List<List<List<String>>>> tmpColumn = features(columns, mark, items.size(), page, Store.TTL);
+    List<List<List<List<String>>>> tmpColumn = features(columns, Store.SEARCH_MARK, items.size(), page, Store.TTL);
 
-    Integer searchMsgID = (Integer) redis.get(Store.SEARCH_MESSAGE_ID_KEY);
-    if (Objects.isNull(searchMsgID)) {
-      Message tmp = receiver.sendMsg(gid, "md", sb.toString(), tmpColumn);
-      redis.set(Store.SEARCH_MESSAGE_ID_KEY, tmp.getMessageId(), Store.TTL);
-    } else {
-      receiver.sendEditMsg(gid, searchMsgID, "md", sb.toString(), tmpColumn);
-      redis.expired(Store.SEARCH_MESSAGE_ID_KEY, Store.TTL);
-    }
+    if (Store.SEARCH_MESSAGE_ID == -1) {
+      Message msg = receiver.sendMsg(gid, "md", sb.toString(), tmpColumn);
+      Store.SEARCH_MESSAGE_ID = msg.getMessageId();
+    } else receiver.sendEditMsg(gid, Store.SEARCH_MESSAGE_ID, "md", sb.toString(), tmpColumn);
   }
 
   private List<List<List<List<String>>>> features(List<List<List<List<String>>>> columns, String mark, int total, int page, int ttl) {

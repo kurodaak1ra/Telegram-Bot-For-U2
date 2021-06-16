@@ -2,10 +2,10 @@ package jp.ka.callback.impl;
 
 import jp.ka.bean.RespPost;
 import jp.ka.callback.Callback;
-import jp.ka.config.Text;
 import jp.ka.controller.Receiver;
 import jp.ka.exception.HttpException;
 import jp.ka.utils.HttpUtils;
+import lombok.SneakyThrows;
 import org.apache.http.NameValuePair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -20,8 +20,9 @@ public class MagicCallback implements Callback {
   @Autowired
   private Receiver receiver;
 
+  @SneakyThrows
   @Override
-  public void execute(CallbackQuery query, Map<String, Object> cache) {
+  public void execute(CallbackQuery query, String cbData, Map<String, Object> cache) {
     Long gid = query.getMessage().getChatId();
     Integer mid = query.getMessage().getMessageId();
 
@@ -35,14 +36,11 @@ public class MagicCallback implements Callback {
           if (param.getName().equals("torrent")) tid = param.getValue();
         }
 
-        receiver.sendCallbackAnswer(query.getId(), false, Text.CALLBACK_WAITING);
-        try {
-          RespPost resp = magic(gid, tid, params);
-          if (resp.getCode() == 200) {
-            receiver.sendDel(gid, mid);
-            receiver.sendMsg(gid, "md", "*魔法施放成功*", null);
-          }
-        } catch (HttpException e) { }
+        RespPost resp = magic(gid, tid, params);
+        if (resp.getCode() == 200) {
+          receiver.sendDel(gid, mid);
+          receiver.sendMsg(gid, "md", "*魔法施放成功*", null);
+        }
       }
     }
   }

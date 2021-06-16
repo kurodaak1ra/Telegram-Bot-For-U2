@@ -14,7 +14,6 @@ import org.apache.http.message.BasicNameValuePair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Message;
-import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.util.ArrayList;
 import java.util.Objects;
@@ -46,7 +45,6 @@ public class LoginCommand implements Command {
     String captcha = split[3].trim();
 
     receiver.sendDel(gid, mid);
-    receiver.sendMsg(gid, "md", Text.WAITING, null);
     try {
       ArrayList<NameValuePair> params = new ArrayList<>();
       params.add(new BasicNameValuePair("login_type", "email"));
@@ -76,7 +74,7 @@ public class LoginCommand implements Command {
       Config.uid = msg.getFrom().getId();
       Config.step = null;
       receiver.sendMsg(gid, "md", "*登陆成功*", null);
-      CommandTools.setUserData(gid);
+      CommandTools.userInfo(gid);
     } catch (HttpException e) { }
   }
 

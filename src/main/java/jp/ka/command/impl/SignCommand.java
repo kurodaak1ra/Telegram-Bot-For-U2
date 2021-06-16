@@ -1,7 +1,6 @@
 package jp.ka.command.impl;
 
 import jp.ka.command.Command;
-import jp.ka.config.Text;
 import jp.ka.controller.Receiver;
 import jp.ka.exception.HttpException;
 import jp.ka.utils.HttpUtils;
@@ -14,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Message;
-import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.media.InputMedia;
 
 import java.io.InputStream;
@@ -33,13 +31,11 @@ public class SignCommand implements Command {
   public void execute(Message msg) {
     Long gid = msg.getChatId();
 
-    Integer mid = (Integer) redis.get(Store.SIGN_MESSAGE_ID_KEY);
-    if (Objects.nonNull(mid)) {
-      receiver.sendDel(gid, mid);
-      redis.del(Store.SIGN_MESSAGE_ID_KEY);
+    if (Store.SIGN_MESSAGE_ID != -1) {
+      receiver.sendDel(gid, Store.SIGN_MESSAGE_ID);
+      Store.SIGN_MESSAGE_ID = -1;
     }
 
-    receiver.sendMsg(gid, "md", Text.WAITING, null);
     sendSign(gid);
   }
 
@@ -65,11 +61,10 @@ public class SignCommand implements Command {
 
   public void sendSign(Long gid) {
     String img = "";
-    HashMap<String, String> params = new HashMap<>();
+    Map<String, String> params = new HashMap<>();
     Map<String, String> options = new HashMap<>();
-    Integer mid = (Integer) redis.get(Store.SIGN_MESSAGE_ID_KEY);
     String mark = UUID.randomUUID().toString();
-    redis.set(Store.SIGN_MESSAGE_MARK_KEY, mark, Store.TTL);
+    Store.SIGN_MESSAGE_MARK = mark;
 
     try {
       RespGet resp = HttpUtils.get(gid, "/showup.php");
@@ -105,11 +100,11 @@ public class SignCommand implements Command {
       )));
 
       InputStream pic = HttpUtils.getPic(gid, "/" + img);
-      if (Objects.isNull(mid)) {
+      if (Store.SIGN_MESSAGE_ID == -1) {
         InputFile file = new InputFile();
         file.setMedia(pic, "sign pic.png");
-        Message message = receiver.sendImg(gid, "", "", file, columns);
-        redis.set(Store.SIGN_MESSAGE_ID_KEY, message.getMessageId(), Store.TTL);
+        Message msg = receiver.sendImg(gid, "", "", file, columns);
+        Store.SIGN_MESSAGE_ID = msg.getMessageId();
       } else {
         InputMedia media = new InputMedia() {
           @Override
@@ -118,7 +113,7 @@ public class SignCommand implements Command {
           }
         };
         media.setMedia(pic, "sign pic.png");
-        receiver.sendEditMedia(gid, mid, media, columns);
+        receiver.sendEditMedia(gid, Store.SIGN_MESSAGE_ID, media, columns);
       }
     } catch (HttpException e) { }
   }
@@ -130,7 +125,7 @@ public class SignCommand implements Command {
     if (Objects.nonNull(params)) data.putAll(params);
     if (Objects.nonNull(entry)) data.put(entry.getValue(), entry.getKey());
 
-    HashMap<String, Object> map = new HashMap<>();
+    Map<String, Object> map = new HashMap<>();
     map.put("source", source);
     map.put("data", data);
     map.put("mark", mark);

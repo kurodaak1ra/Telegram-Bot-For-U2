@@ -41,12 +41,12 @@ public class CallbackResolver {
     String qid = query.getId();
     Long gid = query.getMessage().getChatId();
     Integer mid = query.getMessage().getMessageId();
-    String uuid = "";
-    if (data.length == 2) uuid = data[1];
+    String cbData = "";
+    if (data.length == 2) cbData = data[1];
+    if (cbData.equals("close")) Store.context.getBean(Receiver.class).sendDel(gid, mid);
 
     Map<String, Object> cache = null;
-    boolean isUUID = Pattern.compile("[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}").matcher(uuid).matches();
-    if (isUUID) {
+    if (Pattern.compile("[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}").matcher(cbData).matches()) {
       cache = (Map<String, Object>) redis.get(data[1]);
       if (Objects.isNull(cache)) {
         Store.context.getBean(Receiver.class).sendDel(gid, mid);
@@ -56,7 +56,8 @@ public class CallbackResolver {
       if (cache.get("source").equals("close")) Store.context.getBean(Receiver.class).sendDel(gid, mid);
     }
 
-    callback.execute(query, cache);
+    Store.context.getBean(Receiver.class).sendCallbackAnswer(qid, false, Text.CALLBACK_WAITING);
+    callback.execute(query, cbData, cache);
   }
 
 }

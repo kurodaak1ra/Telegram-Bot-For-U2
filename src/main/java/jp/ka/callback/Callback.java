@@ -6,7 +6,7 @@ import java.util.Map;
 
 public interface Callback {
 
-  void execute(CallbackQuery query, Map<String, Object> cache);
+  void execute(CallbackQuery query, String cbData, Map<String, Object> cache);
   CBK cbk();
 
   enum CBK {
