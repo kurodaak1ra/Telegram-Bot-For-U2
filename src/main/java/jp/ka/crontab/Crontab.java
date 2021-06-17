@@ -16,6 +16,7 @@ import org.telegram.telegrambots.meta.api.objects.InputFile;
 
 import java.io.File;
 import java.util.List;
+import java.util.Objects;
 
 @Component
 public class Crontab {
@@ -23,7 +24,7 @@ public class Crontab {
   @SneakyThrows
   @Scheduled(cron="0/30 * * * * ?")
   public void pm() {
-    if (Config.phantomjs.equals("")) return;
+    if (Objects.isNull(Config.uid) || Config.phantomjs.equals("")) return;
 
     RespGet resp = HttpUtils.get(Config.uid, "/messages.php");
     if (resp.getCode() != 200) return;
