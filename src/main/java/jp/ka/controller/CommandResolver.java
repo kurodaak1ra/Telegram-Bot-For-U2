@@ -36,8 +36,7 @@ public class CommandResolver {
       Command command = commandMap.get(commandText.substring(1));
       if (Objects.isNull(command)) return;
 
-      boolean hasCookie = Config.session.containsKey(Config.cookieKey);
-      if ((hasCookie && (!command.getClass().getSimpleName().equals("CaptchaCommand") && !command.getClass().getSimpleName().equals("LoginCommand"))) || (!hasCookie && !command.needLogin())) {
+      if ((Objects.nonNull(Config.uid) && (!command.getClass().getSimpleName().equals("CaptchaCommand") && !command.getClass().getSimpleName().equals("LoginCommand"))) || (Objects.isNull(Config.uid) && !command.needLogin())) {
         String firstLine = msg.getText().toUpperCase().split("\n")[0].trim();
         if (firstLine.contains(" ")) {
           Message prompt = command.prompt(msg.getChatId());
@@ -55,7 +54,7 @@ public class CommandResolver {
       }
 
       String errMsg = "*请登陆*";
-      if (hasCookie) errMsg = "*您已登陆*";
+      if (Objects.nonNull(Config.uid)) errMsg = "*您已登陆*";
       Store.context.getBean(Receiver.class).sendMsg(msg.getChatId(), "md", errMsg, null);
     }
   }

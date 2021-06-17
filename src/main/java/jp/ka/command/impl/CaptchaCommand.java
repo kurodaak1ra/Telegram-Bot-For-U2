@@ -55,7 +55,7 @@ public class CaptchaCommand implements Command {
       Arrays.asList("刷 🔄 新", CMD.CAPTCHA + ":refresh")
     ))));
     Store.CAPTCHA_MESSAGE_ID = msg.getMessageId();
-    Config.step = CMD.CAPTCHA;
+    Store.step = CMD.CAPTCHA;
   }
 
 }

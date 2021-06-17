@@ -9,8 +9,8 @@ bot:
 u2:
   domain: https://u2.dmhy.org
   cookie:
-    key: nexusphp_u2
-    value:
+
+phantomjs:
 
 #logging:
 #  level:

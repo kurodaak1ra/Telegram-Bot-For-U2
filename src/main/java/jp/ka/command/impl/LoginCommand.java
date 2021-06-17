@@ -8,6 +8,7 @@ import jp.ka.controller.Receiver;
 import jp.ka.exception.HttpException;
 import jp.ka.utils.HttpUtils;
 import jp.ka.bean.RespPost;
+import jp.ka.utils.Store;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
@@ -30,7 +31,7 @@ public class LoginCommand implements Command {
     Long gid = msg.getChatId();
     Integer mid = msg.getMessageId();
 
-    if (Objects.isNull(Config.step) || !Config.step.equals(CMD.CAPTCHA)) {
+    if (Objects.isNull(Store.step) || !Store.step.equals(CMD.CAPTCHA)) {
       receiver.sendMsg(gid, "md", "*登陆前请先获取验证码*", null);
       return;
     }
@@ -71,8 +72,8 @@ public class LoginCommand implements Command {
         receiver.sendMsg(gid, "md", String.format("*登陆失败:* `%s`", errMsg), null);
         return;
       }
+      Store.step = null;
       Config.uid = msg.getFrom().getId();
-      Config.step = null;
       receiver.sendMsg(gid, "md", "*登陆成功*", null);
       CommandTools.userInfo(gid);
     } catch (HttpException e) { }

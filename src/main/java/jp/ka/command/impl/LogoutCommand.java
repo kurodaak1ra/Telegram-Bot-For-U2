@@ -21,8 +21,8 @@ public class LogoutCommand implements Command {
   public void execute(Message msg) {
     Long gid = msg.getChatId();
 
-    Config.session.clear();
     HttpUtils.get(gid, "/logout.php?key=" + U2.pageKey);
+    HttpUtils.session.clear();
     receiver.sendMsg(gid, "md", "*登出成功！*", null);
   }
 

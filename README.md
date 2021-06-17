@@ -30,6 +30,7 @@ OpenJDK 64-Bit Server VM (build 25.292-b10, mixed mode)
 > 
 > 选填参数  
 > --bot.api={api}
+> --phantomjs={path} (不填没有 PM 提醒功能)
 > 
 > 可选填 cookie 实现免手动登陆，但不推荐这么做，也不提供设置方法，有能力自行研究
 
@@ -54,3 +55,7 @@ OpenJDK 64-Bit Server VM (build 25.292-b10, mixed mode)
 > 我的 Telegram 账号被注销了，操作不了 Bot 了怎么办
 
 `回答`: 重启服务即可，所有数据都会回归初始
+
+> PhantomJS 如何下载
+
+`回答`: https://phantomjs.org/download.html 选择好平台后直接下载解压，填好可执行文件路径即可

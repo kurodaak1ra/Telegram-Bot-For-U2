@@ -1,5 +1,6 @@
 package jp.ka.utils;
 
+import jp.ka.command.Command;
 import org.springframework.context.ApplicationContext;
 
 import java.util.ArrayList;
@@ -8,6 +9,8 @@ import java.util.List;
 public class Store {
 
   public static ApplicationContext context;
+
+  public static Command.CMD step;
 
   public static final int TTL = 5 * 30;
 

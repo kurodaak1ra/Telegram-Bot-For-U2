@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 
 import java.util.Map;
+import java.util.Objects;
 
 @Component
 public class CaptchaCallback implements Callback {
@@ -25,7 +26,7 @@ public class CaptchaCallback implements Callback {
     switch (cbData) {
       case "refresh": {
         receiver.sendDel(gid, mid);
-        if (Config.session.containsKey(Config.cookieKey)) return;
+        if (Objects.nonNull(Config.uid)) return;
         Store.context.getBean(CaptchaCommand.class).sendCaptcha(gid);
       }
     }

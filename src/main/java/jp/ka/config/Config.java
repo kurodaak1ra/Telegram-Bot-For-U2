@@ -1,9 +1,9 @@
 package jp.ka.config;
 
-import jp.ka.command.Command;
 import jp.ka.command.CommandTools;
 import jp.ka.controller.CallbackResolver;
 import jp.ka.controller.CommandResolver;
+import jp.ka.utils.HttpUtils;
 import jp.ka.utils.Store;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,8 +13,6 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 
 @Slf4j
@@ -33,33 +31,32 @@ public class Config implements CommandLineRunner, ApplicationListener<ContextRef
     this.U2Domain = domain;
   }
 
-  public static String cookieKey;
-  @Value("${u2.cookie.key}")
-  public void setCookieKey(String key) {
-    this.cookieKey = key;
+  private static String U2Cookie;
+  @Value("${u2.cookie}")
+  public void setCookieValue(String cookie) {
+    this.U2Cookie = cookie;
   }
 
-  private static String cookieValue;
-  @Value("${u2.cookie.value}")
-  public void setCookieValue(String value) {
-    this.cookieValue = value;
+  public static String phantomjs;
+  @Value("${phantomjs}")
+  public void setPhantomjs(String phantomjs) {
+    this.phantomjs = phantomjs;
   }
 
-  public static Command.CMD step;
-  public static Map<String, String> session = new HashMap<>();
-
-  @Override
-  // 测试环境初始化参数
+  @Override // 初始化数据
   public void run(String... args) throws Exception {
-    if (!cookieValue.equals("")) {
+    if (!U2Cookie.equals("")) {
       if (Objects.isNull(uid)) {
         log.info("手动设置了 Cookie 必须再手动设置 Telegram Number UID");
         System.exit(0);
       }
-      Config.session.put(cookieKey, cookieValue);
+      for (String cookie : U2Cookie.split(";")) {
+        String[] split = cookie.split("=");
+        if (split.length == 2) HttpUtils.session.put(split[0], split[1]);
+      }
       CommandTools.userInfo(uid);
     }
-    log.info("[Inject Cookie] {}", Config.session);
+    log.info("[Inject Cookie] {}", HttpUtils.session);
   }
 
   @Override

@@ -32,12 +32,7 @@ import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.util.EntityUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 
 import javax.net.ssl.*;
@@ -47,17 +42,19 @@ import java.io.InputStream;
 import java.security.GeneralSecurityException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.regex.Pattern;
 
 @Slf4j
 @Component
-public class HttpUtils implements ApplicationListener<ContextRefreshedEvent> {
+public class HttpUtils {
 
-  private static ApplicationContext applicationContext;
+  public static Map<String, String> session = new HashMap<>();
 
-  private static final String UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36";
+  public static final String UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:89.0) Gecko/20100101 Firefox/89.0";
 
   private static PoolingHttpClientConnectionManager connMgr;
   private static final int MAX_TIMEOUT = 7000;
@@ -80,11 +77,6 @@ public class HttpUtils implements ApplicationListener<ContextRefreshedEvent> {
     // 在提交请求之前 测试连接是否可用
     configBuilder.setStaleConnectionCheckEnabled(true);
     requestConfig = configBuilder.build();
-  }
-
-  @Override
-  public void onApplicationEvent(ContextRefreshedEvent event) {
-    this.applicationContext = event.getApplicationContext();
   }
 
   // 创建SSL安全连接
@@ -113,7 +105,7 @@ public class HttpUtils implements ApplicationListener<ContextRefreshedEvent> {
       return sslsf;
     } catch (GeneralSecurityException e) {
       log.error("[createSSLConnSocketFactory Exception]", e);
-      applicationContext.getBean(Receiver.class).sendMsg(gid, "md", Text.REQUEST_ERROR, null);
+      Store.context.getBean(Receiver.class).sendMsg(gid, "md", Text.REQUEST_ERROR, null);
       throw new HttpException(501, e.getMessage());
     }
   }
@@ -125,29 +117,31 @@ public class HttpUtils implements ApplicationListener<ContextRefreshedEvent> {
     try {
       HttpResponse response = cli.execute(request, context);
       for (Cookie cookie : context.getCookieStore().getCookies()) {
-        Config.session.put(cookie.getName(), cookie.getValue());
+        session.put(cookie.getName(), cookie.getValue());
       }
 
       byte[] result = EntityUtils.toByteArray(response.getEntity());
       int code = response.getStatusLine().getStatusCode();
-      log.info("[Session] {}", Config.session);
-      log.info("[{} Response <{}> <{}>]\n\n{}\n", request.getMethod(), code, request.getURI(), response);
+      if (!Pattern.compile("messages\\.php").matcher(request.getURI().toString()).find()) {
+        log.info("[Session] {}", session);
+        log.info("[{} Response <{}> <{}>]\n\n{}\n", request.getMethod(), code, request.getURI(), response);
+      }
       ParseHTML html = isHTML(result);
       if (code == 200 && Objects.nonNull(html) && html.getIs()) isLogin(gid, html.getHtml());
       // log.info("[{} Response Body <{}> <{}>]\n\n{}\n", request.getMethod(), code, request.getURI(), new String(result));
       if (Objects.nonNull(html) && !html.getIs()) log.info("[{} Response Body <{}> <{}>]\n\n{}\n", request.getMethod(), code, request.getURI(), new String(result));
       if (code >= 400 && code < 500) {
-        applicationContext.getBean(Receiver.class).sendMsg(gid, "md", Text.NOT_FOUND, null);
+        Store.context.getBean(Receiver.class).sendMsg(gid, "md", Text.NOT_FOUND, null);
         throw new HttpException(code, result.toString());
       }
       if (code >= 500) {
-        applicationContext.getBean(Receiver.class).sendMsg(gid, "md", Text.U2_SERVER_ERROR, null);
+        Store.context.getBean(Receiver.class).sendMsg(gid, "md", Text.U2_SERVER_ERROR, null);
         throw new HttpException(code, result.toString());
       }
       return new Response(response, code, result, html);
     } catch (IOException e) {
       log.error("[Request Exception "+ request.getURI() +"]", e);
-      applicationContext.getBean(Receiver.class).sendMsg(gid, "md", Text.REQUEST_ERROR, null);
+      Store.context.getBean(Receiver.class).sendMsg(gid, "md", Text.REQUEST_ERROR, null);
       throw new HttpException(502, e.getMessage());
     } finally {
       request.releaseConnection();
@@ -158,7 +152,7 @@ public class HttpUtils implements ApplicationListener<ContextRefreshedEvent> {
     HttpGet get = new HttpGet(Config.U2Domain + uri);
     get.addHeader("accept", "*/*");
     get.addHeader("user-agent", UA);
-    if (!Config.session.isEmpty()) get.addHeader("cookie", cookieToString());
+    if (!session.isEmpty()) get.addHeader("cookie", cookieToString());
 
     Response resp = req(gid, get);
     if (Objects.nonNull(resp.getHtml())) {
@@ -172,7 +166,7 @@ public class HttpUtils implements ApplicationListener<ContextRefreshedEvent> {
     HttpGet get = new HttpGet(Config.U2Domain + uri);
     get.addHeader("accept", "*/*");
     get.addHeader("user-agent", UA);
-    if (!Config.session.isEmpty()) get.addHeader("cookie", cookieToString());
+    if (!session.isEmpty()) get.addHeader("cookie", cookieToString());
 
     return new ByteArrayInputStream(req(gid, get).getResult());
   }
@@ -182,7 +176,7 @@ public class HttpUtils implements ApplicationListener<ContextRefreshedEvent> {
     post.addHeader("content-type", mediaType);
     post.addHeader("accept", "*/*");
     post.addHeader("user-agent", UA);
-    if (!Config.session.isEmpty()) post.addHeader("cookie", cookieToString());
+    if (!session.isEmpty()) post.addHeader("cookie", cookieToString());
     post.setEntity(entity);
 
     Response resp = req(gid, post);
@@ -221,10 +215,10 @@ public class HttpUtils implements ApplicationListener<ContextRefreshedEvent> {
     Elements title = html.getElementsByTag("title");
     if (title.size() == 0) return;
     if (title.get(0).text().equals("Access Point :: U2")) {
-      applicationContext.getBean(Receiver.class).sendMsg(gid, "md", Text.LOGIN_EXPIRE, null);
+      Store.context.getBean(Receiver.class).sendMsg(gid, "md", Text.LOGIN_EXPIRE, null);
+      Store.step = null;
       Config.uid = null;
-      Config.step = null;
-      Config.session.clear();
+      session.clear();
       throw new HttpException(403, "not login");
     }
   }
@@ -232,7 +226,7 @@ public class HttpUtils implements ApplicationListener<ContextRefreshedEvent> {
   private static String cookieToString() {
     String tmp = "";
 
-    for (Map.Entry<String, String> entry : Config.session.entrySet()) {
+    for (Map.Entry<String, String> entry : session.entrySet()) {
       if (tmp.equals("")) tmp += entry.getKey() + "=" + entry.getValue();
       else tmp += "; " + entry.getKey() + "=" + entry.getValue();
     }
