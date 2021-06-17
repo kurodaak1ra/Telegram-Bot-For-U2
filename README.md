@@ -58,4 +58,4 @@ OpenJDK 64-Bit Server VM (build 25.292-b10, mixed mode)
 
 > PhantomJS 如何下载
 
-`回答`: https://phantomjs.org/download.html 选择好平台后直接下载解压，填好可执行文件路径即可，<span style="color: red; font-size: 25px">请具体到文件名</span>
+`回答`: https://phantomjs.org/download.html 选择好平台后直接下载解压，填好可执行文件路径即可，`请具体到文件名`
