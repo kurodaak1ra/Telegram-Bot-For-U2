@@ -29,7 +29,7 @@ OpenJDK 64-Bit Server VM (build 25.292-b10, mixed mode)
 > --bot.token={token}
 > 
 > 选填参数  
-> --bot.api={api}
+> --bot.api={api}  
 > --phantomjs={path} (不填没有 PM 提醒功能)
 > 
 > 可选填 cookie 实现免手动登陆，但不推荐这么做，也不提供设置方法，有能力自行研究
