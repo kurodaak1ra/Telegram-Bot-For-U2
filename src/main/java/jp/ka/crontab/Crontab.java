@@ -54,7 +54,7 @@ public class Crontab {
         Config.uid,
         "md",
         String.format("*PM消息*\n\n发讯者: [%s](%s/userdetails.php?id=%s)\n时间: `%s`\n主题: [%s](%s/messages.php?action=viewmessage&id=%s)",
-            username, Config.U2Domain, uid, CommonUtils.formatMD(time), title, Config.U2Domain, id),
+            username, Config.U2Domain, uid, CommonUtils.formatMD(time), CommonUtils.formatMD(title), Config.U2Domain, id),
         new InputFile().setMedia(screen),
         null
       );
