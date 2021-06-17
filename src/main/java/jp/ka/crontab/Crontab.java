@@ -48,7 +48,7 @@ public class Crontab {
 
   @SneakyThrows
   private static void sendNotice(String id, String title, String time, String uid, String username) {
-    List<File> screens = PhantomjsUtils.captureEl(Config.U2Domain + "/messages.php?action=viewmessage&id=" + id, "#outer>table:last-child");
+    List<File> screens = PhantomjsUtils.captureEl(Config.U2Domain + "/messages.php?action=viewmessage&id=" + id, "#outer>table:last-child>tbody>tr:nth-child(3)");
     for (File screen : screens) {
       Store.context.getBean(Receiver.class).sendImg(
         Config.uid,

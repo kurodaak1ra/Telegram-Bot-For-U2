@@ -22,7 +22,7 @@ public class PhantomjsUtils {
 
   public static PhantomJSDriver driver = getPhantomJs();
 
-  private static synchronized PhantomJSDriver getPhantomJs() {
+  private static PhantomJSDriver getPhantomJs() {
     DesiredCapabilities dc = new DesiredCapabilities();
     dc.setJavascriptEnabled(true);
     dc.setCapability("acceptSslCerts",true);
