@@ -3,7 +3,7 @@ package jp.ka.exception;
 import lombok.Data;
 
 @Data
-public class HttpException extends Exception {
+public class HttpException extends RuntimeException {
 
   private Integer code;
   private String msg;

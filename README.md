@@ -1,6 +1,6 @@
 # Telegram Bot - U2 Tool Box
 
-## 因 PT 站政策原因，无法统一部署到一个 Bot (我猜你们也信不着我)，所以自行部署
+## 下载 Release 中的 Jar 文件自行部署，不定时更新
 
 ### 前期准备
 1. 一台电脑或服务器
@@ -41,6 +41,19 @@ OpenJDK 64-Bit Server VM (build 25.292-b10, mixed mode)
 [root@centos ~]# systemctl start u2-bot
 ```
 
+### 功能
+-[x] 登陆
+-[x] 登出
+-[x] 签到
+-[x] 签名条
+-[x] 调戏 U2 娘
+-[x] UCoin 转账
+-[x] 对种子施放魔法
+-[x] 查询种子及详细信息
+-[x] PM 提醒 (需配置 phantomjs 参数)
+---
+-[ ] 全站 Free 提醒
+
 ### 非服务器部署，即开即用
 (你要上的去 Google 才行
 ```shell
@@ -58,4 +71,4 @@ OpenJDK 64-Bit Server VM (build 25.292-b10, mixed mode)
 
 > PhantomJS 如何下载
 
-`回答`: https://phantomjs.org/download.html 选择好平台后直接下载解压，填好可执行文件路径即可，`请具体到文件名`
+`回答`: https://phantomjs.org/download.html 选择好平台后直接下载解压 (不需要编译，直接用)，填好可执行文件路径即可，`请具体到文件名`，`请具体到文件名`，`请具体到文件名`
