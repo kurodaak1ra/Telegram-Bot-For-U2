@@ -51,8 +51,7 @@ OpenJDK 64-Bit Server VM (build 25.292-b10, mixed mode)
 - [x] 对种子施放魔法
 - [x] 查询种子及详细信息
 - [x] PM 提醒 (需配置 phantomjs 参数)
----
-- [ ] 全站 Free 提醒
+- [x] 全站 Free 提醒
 
 ### 非服务器部署，即开即用
 (你要上的去 Google 才行
@@ -72,3 +71,7 @@ OpenJDK 64-Bit Server VM (build 25.292-b10, mixed mode)
 > PhantomJS 如何下载
 
 `回答`: https://phantomjs.org/download.html 选择好平台后直接下载解压 (不需要编译，直接用)，填好可执行文件路径即可，`请具体到文件名`，`请具体到文件名`，`请具体到文件名`
+
+> PM 消息中文不显示
+
+`回答`: 请在服务器中安装中文字体

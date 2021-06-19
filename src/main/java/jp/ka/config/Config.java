@@ -3,6 +3,7 @@ package jp.ka.config;
 import jp.ka.command.CommandTools;
 import jp.ka.controller.CallbackResolver;
 import jp.ka.controller.CommandResolver;
+import jp.ka.utils.CommonUtils;
 import jp.ka.utils.HttpUtils;
 import jp.ka.utils.Store;
 import lombok.extern.slf4j.Slf4j;
@@ -55,6 +56,7 @@ public class Config implements CommandLineRunner, ApplicationListener<ContextRef
         if (split.length == 2) HttpUtils.session.put(split[0], split[1]);
       }
       CommandTools.userInfo(uid);
+      CommonUtils.pushServiceStart();
     }
     log.info("[Inject Cookie] {}", HttpUtils.session);
   }

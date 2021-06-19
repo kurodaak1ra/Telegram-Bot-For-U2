@@ -1,5 +1,7 @@
 package jp.ka.utils;
 
+import jp.ka.push.FreePush;
+import jp.ka.push.PmPush;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
@@ -56,7 +58,7 @@ public class CommonUtils {
         for (List<String> item : rows) {
           InlineKeyboardButton btn = new InlineKeyboardButton();
           btn.setText(item.get(0));
-          String value = item.get(1);
+          String value = item.size() == 2 ? item.get(1) : "*";
           if (Pattern.compile("^http|^https").matcher(value).find()) btn.setUrl(value);
           else btn.setCallbackData(value);
           row.add(btn);
@@ -67,6 +69,11 @@ public class CommonUtils {
 
     markup.setKeyboard(column);
     return markup;
+  }
+
+  public static void pushServiceStart() {
+    FreePush.start();
+    PmPush.start();
   }
 
 }

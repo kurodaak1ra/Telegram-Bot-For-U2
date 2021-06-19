@@ -122,7 +122,7 @@ public class HttpUtils {
 
       byte[] result = EntityUtils.toByteArray(response.getEntity());
       int code = response.getStatusLine().getStatusCode();
-      if (!Pattern.compile("messages\\.php").matcher(request.getURI().toString()).find()) {
+      if (!Pattern.compile("messages\\.php|/promotion\\.php").matcher(request.getURI().toString()).find()) {
         log.info("[Session] {}", session);
         log.info("[{} Response <{}> <{}>]\n\n{}\n", request.getMethod(), code, request.getURI(), response);
       }
@@ -216,7 +216,7 @@ public class HttpUtils {
     if (title.size() == 0) return;
     if (title.get(0).text().equals("Access Point :: U2")) {
       Store.context.getBean(Receiver.class).sendMsg(gid, "md", Text.LOGIN_EXPIRE, null);
-      Store.step = null;
+      Store.STEP = null;
       Config.uid = null;
       session.clear();
       throw new HttpException(403, "not login");

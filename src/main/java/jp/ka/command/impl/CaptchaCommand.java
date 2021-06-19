@@ -1,7 +1,6 @@
 package jp.ka.command.impl;
 
 import jp.ka.command.Command;
-import jp.ka.config.Config;
 import jp.ka.controller.Receiver;
 import jp.ka.utils.HttpUtils;
 import jp.ka.utils.Store;
@@ -55,7 +54,7 @@ public class CaptchaCommand implements Command {
       Arrays.asList("刷 🔄 新", CMD.CAPTCHA + ":refresh")
     ))));
     Store.CAPTCHA_MESSAGE_ID = msg.getMessageId();
-    Store.step = CMD.CAPTCHA;
+    Store.STEP = CMD.CAPTCHA;
   }
 
 }

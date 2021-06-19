@@ -34,7 +34,7 @@ public class PhantomjsUtils {
 
     PhantomJSDriver phantomJSDriver = new PhantomJSDriver(dc);
     phantomJSDriver.manage().window().maximize(); // 窗口最大化
-    phantomJSDriver.manage().window().setSize(new Dimension(1920, 1080));
+    phantomJSDriver.manage().window().setSize(new Dimension(1050, 1050));
     phantomJSDriver.manage().timeouts().implicitlyWait(1, TimeUnit.SECONDS); // 设置等待时间  等待页面加载完成
 
     injectCookie(phantomJSDriver);

@@ -4,13 +4,15 @@ import jp.ka.command.Command;
 import org.springframework.context.ApplicationContext;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Store {
 
   public static ApplicationContext context;
 
-  public static Command.CMD step;
+  public static Command.CMD STEP;
 
   public static final int TTL = 5 * 30;
 
@@ -36,5 +38,10 @@ public class Store {
   public static String TORRENT_MAGIC_FOR = "";
   public static String TORRENT_MAGIC_HOURS = "";
   public static String TORRENT_MAGIC_TYPE = "";
+
+  public static Map<String, Map<String, String>> FREE_MARK = new HashMap<>();
+
+  public static boolean PM_PUSH = true;
+  public static boolean FREE_PUSH = true;
 
 }
