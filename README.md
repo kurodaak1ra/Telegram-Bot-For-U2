@@ -3,7 +3,7 @@
 ## 下载 Release 中的 Jar 文件自行部署，不定时更新
 
 ### 一键部署脚本
-下载项目中的 deploy.sh，在 root 下执行即可，仅支持 centos
+下载项目中的 deploy.sh，在 root 下执行即可，仅支持 centos (瞎写的不一定好用
 
 ### 前期准备
 1. 一台电脑或服务器
