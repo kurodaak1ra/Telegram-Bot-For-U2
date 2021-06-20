@@ -51,10 +51,12 @@ public class TorrentInfoCallback implements Callback {
   }
 
   private void link(Long gid, Integer mid, String tid) {
-    String text = String.format("链接包含私密的 passkey 请谨慎使用\n\n%s/download.php?id=%s&passkey=%s&https=1", Config.U2Domain, tid, U2.passKey);
-    receiver.sendEditMsg(gid, mid, "md", CommonUtils.formatMD(text), Arrays.asList(Arrays.asList(Arrays.asList(
-      Arrays.asList("❌", CBK.TORRENT_LINK + ":close")
-    ))));
+    receiver.sendEditMsg(gid, mid, "md",
+      "*链接包含私密的 passkey 请谨慎使用*\n\n" + CommonUtils.formatMD(String.format("%s/download.php?id=%s&passkey=%s&https=1", Config.U2Domain, tid, U2.passKey)),
+      Arrays.asList(Arrays.asList(Arrays.asList(
+        Arrays.asList("❌", CBK.TORRENT_LINK + ":close")
+      )))
+    );
   }
 
   public void magic(Long gid, Integer mid) {

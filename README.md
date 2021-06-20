@@ -62,7 +62,7 @@ OpenJDK 64-Bit Server VM (build 25.292-b10, mixed mode)
 ### 非服务器部署，即开即用
 (你要上的去 Google 才行
 ```shell
-[root@centos ~]# java -jar telegram-bot-for-u2-0.0.1-SNAPSHOT.jar --bot.username={xxxxx} --bot.token={xxxxx}
+java -jar telegram-bot-for-u2-0.0.1-SNAPSHOT.jar --bot.username={xxxxx} --bot.token={xxxxx}
 ```
 
 ### 常见问题
