@@ -37,7 +37,7 @@ check_params() {
   fi
   read -p "请输入 Telegram Bot Token: " token
   while [ ! $token ]; do
-    read -p "请输入 Telegram Bot Username: " token
+    read -p "请输入 Telegram Bot Token: " token
   done
   echo "安装即将开始"
   echo -e "${Red_background_prefix}如您想取消安装，请在 5 秒内按 Ctrl+C 终止${Font_color_suffix}\n"
