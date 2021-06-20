@@ -5,7 +5,7 @@
 ### 一键部署脚本
 在 root 下执行以下命令，仅支持 centos (瞎写的不一定好用
 ```shell
-bash <(curl -sSL https://raw.githubusercontent.com/kurodaak1ra/Telegram-Bot-For-U2/main/deploy.sh) -username={username} -token={token}
+bash <(curl -sSL https://raw.githubusercontent.com/kurodaak1ra/Telegram-Bot-For-U2/main/deploy.sh)
 ```
 
 ### 前期准备
