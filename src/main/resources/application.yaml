@@ -1,3 +1,13 @@
+spring:
+  datasource:
+    driver-class-name: org.sqlite.JDBC
+    url: jdbc:sqlite:./u2-bot.db
+    username:
+    password:
+
+mybatis:
+  mapper-locations: mapper/*Mapper.xml
+
 user:
   id:
 
@@ -11,6 +21,7 @@ u2:
   cookie:
 
 phantomjs:
+
 
 #logging:
 #  level:

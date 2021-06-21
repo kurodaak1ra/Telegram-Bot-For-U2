@@ -16,7 +16,7 @@ public class Store {
 
   public static final int TTL = 5 * 30;
 
-  public static final String ADV = "来自 Telegram Bot - U2 Tool Box\n\nDesigned by KA";
+  public static final String ADV = "来自 Telegram Bot - U2Info Tool Box\n\nDesigned by KA";
 
   public static int CAPTCHA_MESSAGE_ID = -1;
 

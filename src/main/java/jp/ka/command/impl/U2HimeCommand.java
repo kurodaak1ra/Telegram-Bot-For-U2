@@ -18,7 +18,7 @@ public class U2HimeCommand implements Command {
   public void execute(Message msg) {
     Long gid = msg.getChatId();
 
-    receiver.sendMsg(gid, "md", "*调戏 U2 娘*", Arrays.asList(
+    receiver.sendMsg(gid, "md", "*调戏 U2Info 娘*", Arrays.asList(
       Arrays.asList(Arrays.asList(
         Arrays.asList("分享", CMD.U2_HIME + ":我的分享率"),
         Arrays.asList("实际", CMD.U2_HIME + ":我的实际分享率"),
@@ -124,7 +124,7 @@ public class U2HimeCommand implements Command {
 
   @Override
   public String description() {
-    return "U2 娘";
+    return "调戏 U2 娘";
   }
 
   @Override

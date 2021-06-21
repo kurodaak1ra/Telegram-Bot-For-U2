@@ -5,7 +5,7 @@
 ### 一键部署脚本
 在 root 下执行以下命令，仅支持 centos (瞎写的不一定好用
 ```shell
-bash <(curl -sSL https://raw.githubusercontent.com/kurodaak1ra/Telegram-Bot-For-U2/main/deploy.sh)
+bash <(curl -sSL https://raw.githubusercontent.com/kurodaak1ra/Telegram-Bot-For-U2/main/u2-bot.sh)
 ```
 
 ### 前期准备
@@ -72,7 +72,7 @@ java -jar telegram-bot-for-u2-0.0.1-SNAPSHOT.jar --bot.username={xxxxx} --bot.to
 
 > 我的 Telegram 账号被注销了，操作不了 Bot 了怎么办
 
-`回答`: 重启服务即可，所有数据都会回归初始
+`回答`: 删除 u2-bot.db 文件重新启动即可 (如果你没更改过路径，那么应该在 /home 路径下)
 
 > PhantomJS 如何下载
 

@@ -21,7 +21,7 @@ public class PmPush {
   private static TimerTask timerTask = null;
 
   public static void start() {
-    if (Objects.isNull(Config.uid) || Objects.nonNull(timerTask) || Config.phantomjs.equals("")) return;
+    if (Objects.isNull(Config.id) || Objects.nonNull(timerTask) || Config.phantomjs.equals("")) return;
     Store.PM_PUSH = true;
     timerTask = new TimerTask() {
       @Override
@@ -41,7 +41,7 @@ public class PmPush {
   }
 
   private static void pm() {
-    RespGet resp = HttpUtils.get(Config.uid, "/messages.php");
+    RespGet resp = HttpUtils.get(Config.id, "/messages.php");
     if (resp.getCode() != 200) return;
     Elements tables = resp.getHtml().getElementById("outer").getElementsByTag("table");
     Element content = tables.get(tables.size() - 1);
@@ -72,7 +72,7 @@ public class PmPush {
 
     List<File> screens = PhantomjsUtils.captureEl(Config.U2Domain + "/messages.php?action=viewmessage&id=" + mid, "#outer table:last-child");
     for (File screen : screens) {
-      Store.context.getBean(Receiver.class).sendImg( Config.uid, "md", String.format("*PM消息提醒*\n\n主题: [%s](%s/messages.php?action=viewmessage&id=%s)\n来自: %s\n时间: `%s`",
+      Store.context.getBean(Receiver.class).sendImg( Config.id, "md", String.format("*PM消息提醒*\n\n主题: [%s](%s/messages.php?action=viewmessage&id=%s)\n来自: %s\n时间: `%s`",
         CommonUtils.formatMD(theme), Config.U2Domain, mid, from, CommonUtils.formatMD(time)), new InputFile().setMedia(screen, "pm.png"), null);
     }
   }

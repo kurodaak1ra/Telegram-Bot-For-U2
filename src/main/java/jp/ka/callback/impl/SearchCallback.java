@@ -92,11 +92,11 @@ public class SearchCallback implements Callback {
       Element tr = trs.get(i);
       String title = trs.get(i).getElementsByTag("td").get(0).text();
       switch (title) {
-        case "下载": {
-          Element download = tr.getElementsByTag("a").get(1);
-          U2.passKey = download.attr("href").split("&")[1].split("=")[1];
-          break;
-        }
+        // case "下载": {
+        //   Element download = tr.getElementsByTag("a").get(1);
+        //   U2.passKey = download.attr("href").split("&")[1].split("=")[1];
+        //   break;
+        // }
         case "副标题": {
           Element td = tr.getElementsByTag("td").get(1);
           sb.append("_" + CommonUtils.formatMD(td.text()) + "_\n");

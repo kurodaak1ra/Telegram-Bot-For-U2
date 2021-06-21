@@ -74,8 +74,9 @@ public class LoginCommand implements Command {
         return;
       }
       Store.STEP = null;
-      Config.uid = msg.getFrom().getId();
+      Config.id = gid;
       receiver.sendMsg(gid, "md", "*登陆成功*", null);
+      CommandTools.setData(gid);
       CommandTools.userInfo(gid);
       CommonUtils.pushServiceStart();
     } catch (HttpException e) { }

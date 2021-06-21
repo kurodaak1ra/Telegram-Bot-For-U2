@@ -27,7 +27,7 @@ public class FreePush {
   }
 
   public static void start() {
-    if (Objects.isNull(Config.uid) || Objects.nonNull(timerTask)) return;
+    if (Objects.isNull(Config.id) || Objects.nonNull(timerTask)) return;
     Store.FREE_PUSH = true;
     timerTask = new TimerTask() {
       @Override
@@ -48,7 +48,7 @@ public class FreePush {
 
   @SneakyThrows
   private static void free() {
-    RespGet resp = HttpUtils.get(Config.uid, "/promotion.php?action=list");
+    RespGet resp = HttpUtils.get(Config.id, "/promotion.php?action=list");
     if (resp.getCode() != 200) return;
     Elements tables = resp.getHtml().getElementById("outer").getElementsByTag("table");
     Element content = tables.get(tables.size() - 1);
@@ -66,7 +66,7 @@ public class FreePush {
         Map<String, String> val = entry.getValue();
         long difference = SDF.parse(val.get("end_time") + " +0800").getTime() - new Date().getTime();
         if (difference > 0 && difference <= 300000) {
-          Store.context.getBean(Receiver.class).sendMsg(Config.uid, "md",  String.format("*全站 FREE 到期提醒*\n\n魔法: [\\#%s](%s/promotion.php?action=detail&id=%s)\n创建: [%s](%s/userdetails.php?id=%s)\n开始: `%s`\n结束: `%s`\n类型: `%s`\n备注: `%s`",
+          Store.context.getBean(Receiver.class).sendMsg(Config.id, "md",  String.format("*全站 FREE 到期提醒*\n\n魔法: [\\#%s](%s/promotion.php?action=detail&id=%s)\n创建: [%s](%s/userdetails.php?id=%s)\n开始: `%s`\n结束: `%s`\n类型: `%s`\n备注: `%s`",
               fid, Config.U2Domain, fid, val.get("cname"), Config.U2Domain, val.get("cid"), val.get("create_time"), val.get("end_time"), val.get("rate"), val.get("remarks")), null);
         }
         if (entry.getKey().equals(fid)) {
@@ -83,7 +83,7 @@ public class FreePush {
   }
   @SneakyThrows
   private static void freeNotice(String fid) {
-    RespGet resp = HttpUtils.get(Config.uid, "/promotion.php?action=detail&id=" + fid);
+    RespGet resp = HttpUtils.get(Config.id, "/promotion.php?action=detail&id=" + fid);
     Elements tables = resp.getHtml().getElementById("outer").getElementsByTag("table");
     Element content = tables.get(tables.size() - 1);
 
@@ -117,7 +117,7 @@ public class FreePush {
     map.put("remarks", remarks);
     Store.FREE_MARK.put(fid, map);
 
-    Store.context.getBean(Receiver.class).sendMsg(Config.uid, "md", String.format("*全站 FREE 提醒*\n\n魔法: [\\#%s](%s/promotion.php?action=detail&id=%s)\n创建: [%s](%s/userdetails.php?id=%s)\n开始: `%s`\n结束: `%s`\n类型: `%s`\n备注: `%s`",
+    Store.context.getBean(Receiver.class).sendMsg(Config.id, "md", String.format("*全站 FREE 提醒*\n\n魔法: [\\#%s](%s/promotion.php?action=detail&id=%s)\n创建: [%s](%s/userdetails.php?id=%s)\n开始: `%s`\n结束: `%s`\n类型: `%s`\n备注: `%s`",
         fid, Config.U2Domain, fid, CommonUtils.formatMD(cname), Config.U2Domain, cid, createTime, endTime, CommonUtils.torrentStatus(rate, rateUp, rateDown), remarks), null);
   }
 
