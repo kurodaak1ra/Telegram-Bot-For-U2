@@ -90,7 +90,7 @@ systemctl enable u2-bot
 download() {
   rm -rf /home/telegram-bot-for-u2-0.0.1-SNAPSHOT.jar
   rm -rf /home/phantomjs-2.1.1-linux-x86_64*
-  wget -P /home https://github.com/kurodaak1ra/Telegram-Bot-For-U2/releases/download/0.0.1/telegram-bot-for-u2-0.0.1-SNAPSHOT.jar
+  wget -P /home https://github.com/kurodaak1ra/Telegram-Bot-For-U2/releases/download/v0.0.2/telegram-bot-for-u2-0.0.1-SNAPSHOT.jar
   wget -P /home https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-2.1.1-linux-x86_64.tar.bz2
   tar -jxf /home/phantomjs-2.1.1-linux-x86_64.tar.bz2 -C /home
   mv /home/phantomjs-2.1.1-linux-x86_64/bin/phantomjs /home
