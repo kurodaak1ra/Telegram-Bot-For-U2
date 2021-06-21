@@ -76,4 +76,11 @@ public class CommandTools {
     mapper.insertInfo(new U2Info(id, Integer.valueOf(U2.uid), U2.pageKey, U2.passKey));
   }
 
+  public static void loginSucc() {
+    Long gid = Config.id;
+    CommandTools.setData(gid);
+    CommandTools.userInfo(gid);
+    CommonUtils.pushServiceStart();
+  }
+
 }

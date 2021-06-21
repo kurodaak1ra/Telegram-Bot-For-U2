@@ -1,11 +1,13 @@
 package jp.ka.command.impl;
 
+import jp.ka.bean.U2Cookie;
 import jp.ka.command.Command;
 import jp.ka.command.CommandTools;
 import jp.ka.config.Config;
 import jp.ka.config.Text;
 import jp.ka.controller.Receiver;
 import jp.ka.exception.HttpException;
+import jp.ka.mapper.U2Mapper;
 import jp.ka.utils.CommonUtils;
 import jp.ka.utils.HttpUtils;
 import jp.ka.bean.RespPost;
@@ -18,11 +20,15 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.Objects;
 
 @Slf4j
 @Component
 public class LoginCommand implements Command {
+
+  @Autowired
+  private U2Mapper mapper;
 
   @Autowired
   private Receiver receiver;
@@ -76,9 +82,10 @@ public class LoginCommand implements Command {
       Store.STEP = null;
       Config.id = gid;
       receiver.sendMsg(gid, "md", "*登陆成功*", null);
-      CommandTools.setData(gid);
-      CommandTools.userInfo(gid);
-      CommonUtils.pushServiceStart();
+      CommandTools.loginSucc();
+      for (Map.Entry<String, String> entry : HttpUtils.session.entrySet()) {
+        mapper.insertCookies(new U2Cookie(entry.getKey(), entry.getValue()));
+      }
     } catch (HttpException e) { }
   }
 

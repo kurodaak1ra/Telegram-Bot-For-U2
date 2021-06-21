@@ -80,10 +80,7 @@ public class Config implements CommandLineRunner, ApplicationListener<ContextRef
           mapper.insertCookies(new U2Cookie(split[0], split[1]));
         }
       }
-      CommandTools.setData(id);
-      CommandTools.userInfo(id);
-      CommonUtils.pushServiceStart();
-
+      CommandTools.loginSucc();
       log.info("[Inject Cookie] {}", HttpUtils.session);
     }
   }
