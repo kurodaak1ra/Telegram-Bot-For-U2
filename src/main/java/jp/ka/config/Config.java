@@ -64,6 +64,7 @@ public class Config implements CommandLineRunner, ApplicationListener<ContextRef
         HttpUtils.session.put(cookie.getK(), cookie.getV());
       }
       CommandTools.userInfo(id);
+      CommonUtils.pushServiceStart();
       log.info("[Login Data From SQL]");
       return;
     }
