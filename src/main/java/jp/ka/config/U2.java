@@ -3,7 +3,6 @@ package jp.ka.config;
 public class U2 {
 
   public static String uid;
-  public static String username;
   public static String pageKey;
   public static String passKey;
 

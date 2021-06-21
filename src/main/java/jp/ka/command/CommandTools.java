@@ -9,7 +9,6 @@ import jp.ka.utils.CommonUtils;
 import jp.ka.utils.HttpUtils;
 import jp.ka.bean.RespGet;
 import jp.ka.utils.Store;
-import lombok.SneakyThrows;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
@@ -22,12 +21,11 @@ public class CommandTools {
 
   private static final U2Mapper mapper = Store.context.getBean(U2Mapper.class);
 
-  @SneakyThrows
   public static void userInfo(Long gid) {
     RespGet resp = HttpUtils.get(gid,"/index.php");
     Element medium = resp.getHtml().getElementsByClass("medium").get(0);
     // ========================================================
-    U2.username = medium.children().get(0).child(0).text();
+    String username = medium.children().get(0).child(0).text();
     // ========================================================
     List<TextNode> text = medium.textNodes();
     String shareRate = text.get(7).toString().trim();
@@ -62,7 +60,7 @@ public class CommandTools {
     String coinCopper = uCoin.getElementsByClass("ucoin-copper").text();
     // ========================================================
     String tmpMsg = String.format("*\\[个人信息\\]*\n\nUID: `%s`\n用户名: `%s`\n分享率: `%s`\n上传量: `%s`\n下载量: `%s`\nUCoin: `%s%s%s`\n邀请: `%s`\n客户端: `%s`\n上传: `%s`\n下载: `%s`",
-        U2.uid, CommonUtils.formatMD(U2.username), shareRate, uploads, downloads, coinGold.equals("") ? "" : "\uD83E\uDD47" + coinGold, coinSilver.equals("") ? "" : "\uD83E\uDD48" + coinSilver, coinCopper.equals("") ? "" : "\uD83E\uDD49" + coinCopper, invite, client, uploading, downloading);
+        U2.uid, CommonUtils.formatMD(username), shareRate, uploads, downloads, coinGold.equals("") ? "" : "\uD83E\uDD47" + coinGold, coinSilver.equals("") ? "" : "\uD83E\uDD48" + coinSilver, coinCopper.equals("") ? "" : "\uD83E\uDD49" + coinCopper, invite, client, uploading, downloading);
     receiver.sendMsg(gid, "md", tmpMsg, null);
   }
 
