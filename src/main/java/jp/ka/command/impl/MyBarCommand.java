@@ -45,7 +45,7 @@ public class MyBarCommand implements Command {
 
   @Override
   public String description() {
-    return "信息条";
+    return "签名条";
   }
 
   @Override

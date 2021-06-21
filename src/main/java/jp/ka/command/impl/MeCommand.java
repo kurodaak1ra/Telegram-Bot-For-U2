@@ -29,7 +29,7 @@ public class MeCommand implements Command {
 
   @Override
   public String description() {
-    return "签名条";
+    return "个人信息";
   }
 
   @Override
