@@ -4,7 +4,7 @@ public class Text {
 
   public static final String REQUEST_ERROR = "*服务器请求失败*";
 
-  public static final String U2_SERVER_ERROR = "*U2Info 服务器异常*";
+  public static final String U2_SERVER_ERROR = "*U2 服务器异常*";
 
   public static final String COMMAND_ERROR = "*格式错误，请按如下格式发送信息*";
 

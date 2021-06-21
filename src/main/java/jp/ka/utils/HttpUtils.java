@@ -214,7 +214,7 @@ public class HttpUtils {
   private static void isLogin(Long gid, Document html) throws HttpException {
     Elements title = html.getElementsByTag("title");
     if (title.size() == 0) return;
-    if (title.get(0).text().equals("Access Point :: U2Info")) {
+    if (title.get(0).text().equals("Access Point :: U2")) {
       Store.context.getBean(Receiver.class).sendMsg(gid, "md", Text.LOGIN_EXPIRE, null);
       Store.STEP = null;
       Config.id = null;

@@ -23,7 +23,7 @@ welcome()  {
 
 +--------------------------------------------------------------------------------+
 
-欢迎使用 Telegram Bot - U2Info Tool Box 一键安装程序'$Font_color_suffix'\n'
+欢迎使用 Telegram Bot - U2 Tool Box 一键安装程序'$Font_color_suffix'\n'
 }
 
 # 用户输入
