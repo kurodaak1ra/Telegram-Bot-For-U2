@@ -62,22 +62,21 @@ public class FreePush {
       String forr = columns.get(3).text();
       String status = columns.get(5).text();
 
-      inner:for (Map.Entry<String, Map<String, String>> entry : Store.FREE_MARK.entrySet()) {
+      inner:for (Map.Entry<String, Map<String, String>> entry : Store.FREE_INFO.entrySet()) {
+        if (!entry.getKey().equals(fid)) continue inner;
         Map<String, String> val = entry.getValue();
         long difference = SDF.parse(val.get("end_time") + " +0800").getTime() - new Date().getTime();
-        if (difference > 0 && difference <= 300000) {
+        if (difference <= 0) {
+          Store.FREE_INFO.remove(fid);
           Store.context.getBean(Receiver.class).sendMsg(Config.id, "md",  String.format("*全站 FREE 到期提醒*\n\n魔法: [\\#%s](%s/promotion.php?action=detail&id=%s)\n创建: [%s](%s/userdetails.php?id=%s)\n开始: `%s`\n结束: `%s`\n类型: `%s`\n备注: `%s`",
-              fid, Config.U2Domain, fid, val.get("cname"), Config.U2Domain, val.get("cid"), val.get("create_time"), val.get("end_time"), val.get("rate"), val.get("remarks")), null);
-        }
-        if (entry.getKey().equals(fid)) {
-          Store.FREE_MARK.remove(fid);
-          break outer;
+            fid, Config.U2Domain, fid, val.get("cname"), Config.U2Domain, val.get("cid"), val.get("create_time"), val.get("end_time"), val.get("rate"), val.get("remarks")), null);
+          break inner;
         }
       }
 
       if (type.equals("魔法") && torrent.equals("全局") && forr.equals("所有人") && status.equals("有效")) {
         freeNotice(fid);
-        break;
+        break outer;
       }
     }
   }
@@ -115,10 +114,10 @@ public class FreePush {
     map.put("end_time", endTime);
     map.put("rate", CommonUtils.torrentStatus(rate, rateUp, rateDown));
     map.put("remarks", remarks);
-    Store.FREE_MARK.put(fid, map);
+    Store.FREE_INFO.put(fid, map);
 
     Store.context.getBean(Receiver.class).sendMsg(Config.id, "md", String.format("*全站 FREE 提醒*\n\n魔法: [\\#%s](%s/promotion.php?action=detail&id=%s)\n创建: [%s](%s/userdetails.php?id=%s)\n开始: `%s`\n结束: `%s`\n类型: `%s`\n备注: `%s`",
-        fid, Config.U2Domain, fid, CommonUtils.formatMD(cname), Config.U2Domain, cid, createTime, endTime, CommonUtils.torrentStatus(rate, rateUp, rateDown), remarks), null);
+      fid, Config.U2Domain, fid, CommonUtils.formatMD(cname), Config.U2Domain, cid, createTime, endTime, CommonUtils.torrentStatus(rate, rateUp, rateDown), remarks), null);
   }
 
 

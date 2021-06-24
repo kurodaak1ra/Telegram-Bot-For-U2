@@ -23,11 +23,6 @@ import java.util.*;
 @Component
 public class Receiver extends TelegramLongPollingBot {
 
-  private static String api;
-  @Value("${bot.api}")
-  public void setApi(String api) {
-    this.api = api;
-  }
   @Value("${bot.token}")
   private String token;
   @Value("${bot.username}")
@@ -36,8 +31,8 @@ public class Receiver extends TelegramLongPollingBot {
   private final CommandResolver commandResolver;
   private final CallbackResolver callbackResolver;
 
-  public Receiver(CommandResolver commandResolver, CallbackResolver callbackResolver) {
-    super(options());
+  public Receiver(CommandResolver commandResolver, CallbackResolver callbackResolver, DefaultBotOptions options) {
+    super(options);
     this.commandResolver = commandResolver;
     this.callbackResolver = callbackResolver;
   }
@@ -80,14 +75,6 @@ public class Receiver extends TelegramLongPollingBot {
     } else if (update.hasCallbackQuery()) {
       callbackResolver.executeCommand(update);
     }
-  }
-
-  private static DefaultBotOptions options() {
-    DefaultBotOptions opt = new DefaultBotOptions();
-    opt.setAllowedUpdates(Arrays.asList("message", "chat_member", "callback_query"));
-    if (Objects.nonNull(api)) opt.setBaseUrl(api);
-
-    return opt;
   }
 
   public Message sendMsg(Long gid, String parse, String text, List<List<List<List<String>>>> columns) {

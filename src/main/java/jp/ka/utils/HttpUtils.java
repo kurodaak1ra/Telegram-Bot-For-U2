@@ -11,7 +11,6 @@ import jp.ka.exception.HttpException;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.Charsets;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -25,6 +24,7 @@ import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.TrustStrategy;
 import org.apache.http.conn.ssl.X509HostnameVerifier;
 import org.apache.http.cookie.Cookie;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
@@ -39,6 +39,7 @@ import javax.net.ssl.*;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -192,13 +193,13 @@ public class HttpUtils {
     return new RespPost(resp.getCode(), null, null);
   }
 
-  // public static Map<String, String> postJSON(String path, String json) throws HttpException {
-  //   StringEntity entity = new StringEntity(json, Charsets.UTF_8);
-  //   return post(path, "application/json", entity);
-  // }
+  public static RespPost postJSON(Long gid, String path, Map<String, Object> params) throws HttpException {
+    StringEntity entity = new StringEntity(new Gson().toJson(params), StandardCharsets.UTF_8);
+    return post(gid, path, "application/json", entity);
+  }
 
   public static RespPost postForm(Long gid, String path, List<NameValuePair> parametersBody) throws HttpException {
-    HttpEntity entity = new UrlEncodedFormEntity(parametersBody, Charsets.UTF_8);
+    HttpEntity entity = new UrlEncodedFormEntity(parametersBody, StandardCharsets.UTF_8);
     return post(gid, path, "application/x-www-form-urlencoded", entity);
   }
 

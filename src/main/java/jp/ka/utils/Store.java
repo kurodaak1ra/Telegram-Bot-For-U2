@@ -39,7 +39,7 @@ public class Store {
   public static String TORRENT_MAGIC_HOURS = "";
   public static String TORRENT_MAGIC_TYPE = "";
 
-  public static Map<String, Map<String, String>> FREE_MARK = new HashMap<>();
+  public static Map<String, Map<String, String>> FREE_INFO = new HashMap<>();
 
   public static boolean PM_PUSH = true;
   public static boolean FREE_PUSH = true;
