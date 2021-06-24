@@ -1,7 +1,7 @@
 package jp.ka.push;
 
 import jp.ka.bean.RespGet;
-import jp.ka.config.Config;
+import jp.ka.config.BotInitializer;
 import jp.ka.controller.Receiver;
 import jp.ka.exception.HttpException;
 import jp.ka.utils.CommonUtils;
@@ -15,7 +15,10 @@ import org.jsoup.select.Elements;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
 
 import java.io.File;
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class PmPush {
 
@@ -23,7 +26,7 @@ public class PmPush {
   private static TimerTask timerTask = null;
 
   public static void start() {
-    if (Objects.isNull(Config.id) || Objects.nonNull(timerTask) || Config.phantomjs.equals("")) return;
+    if (Objects.isNull(BotInitializer.id) || Objects.nonNull(timerTask) || BotInitializer.phantomjs.equals("")) return;
     Store.PM_PUSH = true;
     timerTask = new TimerTask() {
       @Override
@@ -45,7 +48,7 @@ public class PmPush {
   private static void pm() {
     RespGet resp = null;
     try {
-      resp = HttpUtils.get(Config.id, "/messages.php");
+      resp = HttpUtils.get(BotInitializer.id, "/messages.php");
       Elements tables = resp.getHtml().getElementById("outer").getElementsByTag("table");
       Element content = tables.get(tables.size() - 1);
 
@@ -73,7 +76,7 @@ public class PmPush {
         if (Store.PM_PUSH_REQ_FAILED_TIMES >= 10) {
           stop();
           Store.PM_PUSH_REQ_FAILED_TIMES = 0;
-          Store.context.getBean(Receiver.class).sendMsg( Config.id, "md", String.format(MsgTpl.PUSH_FAILED_MULTIPLE_TIMES, "PM"), null);
+          Store.context.getBean(Receiver.class).sendMsg(BotInitializer.id, "md", String.format(MsgTpl.PUSH_FAILED_MULTIPLE_TIMES, "PM"), null);
         } else Store.PM_PUSH_REQ_FAILED_TIMES++;
       }
     }
@@ -82,12 +85,12 @@ public class PmPush {
   @SneakyThrows
   private static void pmNotice(String mid, String theme, String sid, String sname, String time) {
     String from = "`" + sname + "`";
-    if (Objects.nonNull(sid)) from = String.format("[%s](%s/userdetails.php?id=%s)", CommonUtils.formatMD(sname), Config.U2Domain, sid);
+    if (Objects.nonNull(sid)) from = String.format("[%s](%s/userdetails.php?id=%s)", CommonUtils.formatMD(sname), BotInitializer.U2Domain, sid);
 
-    List<File> screens = PhantomjsUtils.captureEl(Config.U2Domain + "/messages.php?action=viewmessage&id=" + mid, "#outer table:last-child");
+    List<File> screens = PhantomjsUtils.captureEl(BotInitializer.U2Domain + "/messages.php?action=viewmessage&id=" + mid, "#outer table:last-child");
     for (File screen : screens) {
-      Store.context.getBean(Receiver.class).sendImg( Config.id, "md", String.format("*PM消息提醒*\n\n主题: [%s](%s/messages.php?action=viewmessage&id=%s)\n来自: %s\n时间: `%s`",
-        CommonUtils.formatMD(theme), Config.U2Domain, mid, from, CommonUtils.formatMD(time)), new InputFile().setMedia(screen, "pm.png"), null);
+      Store.context.getBean(Receiver.class).sendImg(BotInitializer.id, "md", String.format("*PM消息提醒*\n\n主题: [%s](%s/messages.php?action=viewmessage&id=%s)\n来自: %s\n时间: `%s`",
+              CommonUtils.formatMD(theme), BotInitializer.U2Domain, mid, from, CommonUtils.formatMD(time)), new InputFile().setMedia(screen, "pm.png"), null);
     }
   }
 

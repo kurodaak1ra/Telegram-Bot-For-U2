@@ -2,7 +2,7 @@ package jp.ka.callback.impl;
 
 import jp.ka.bean.RespPost;
 import jp.ka.callback.Callback;
-import jp.ka.config.Config;
+import jp.ka.config.BotInitializer;
 import jp.ka.variable.U2;
 import jp.ka.controller.Receiver;
 import jp.ka.utils.CommonUtils;
@@ -48,8 +48,8 @@ public class U2HimeCallback implements Callback {
       if (reply.size() == 2) {
         String imgSrc = reply.get(1).attr("src");
         if (!imgSrc.equals("")) {
-          String uri = imgSrc.replaceAll(Config.U2Domain, "");
-          InputStream pic = HttpUtils.getPic(gid, uri.charAt(0) == '/' ? uri : "/" + uri);
+            String      uri = imgSrc.replaceAll(BotInitializer.U2Domain, "");
+            InputStream pic = HttpUtils.getPic(gid, uri.charAt(0) == '/' ? uri : "/" + uri);
           if (!replyMsg.equals("")) replyMsg = "*U2娘* " + CommonUtils.formatMD(replyMsg);
           receiver.sendImg(gid, "md", replyMsg, new InputFile().setMedia(pic, "img.png"), null);
           return;

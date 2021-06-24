@@ -1,15 +1,15 @@
 package jp.ka.command.impl;
 
+import jp.ka.bean.RespPost;
 import jp.ka.bean.U2Cookie;
 import jp.ka.command.Command;
 import jp.ka.command.CommandTools;
-import jp.ka.config.Config;
+import jp.ka.config.BotInitializer;
 import jp.ka.variable.MsgTpl;
 import jp.ka.controller.Receiver;
 import jp.ka.exception.HttpException;
 import jp.ka.mapper.U2Mapper;
 import jp.ka.utils.HttpUtils;
-import jp.ka.bean.RespPost;
 import jp.ka.variable.Store;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.NameValuePair;
@@ -79,7 +79,7 @@ public class LoginCommand implements Command {
         return;
       }
       Store.STEP = null;
-      Config.id = gid;
+      BotInitializer.id = gid;
       receiver.sendMsg(gid, "md", "*登陆成功*", null);
       CommandTools.loginSucc();
       for (Map.Entry<String, String> entry : HttpUtils.session.entrySet()) {

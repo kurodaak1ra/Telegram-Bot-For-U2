@@ -1,7 +1,7 @@
 package jp.ka.command.impl;
 
 import jp.ka.command.Command;
-import jp.ka.config.Config;
+import jp.ka.config.BotInitializer;
 import jp.ka.variable.U2;
 import jp.ka.controller.Receiver;
 import jp.ka.utils.HttpUtils;
@@ -29,7 +29,7 @@ public class MyBarCommand implements Command {
 
     InputStream img = HttpUtils.getPic(gid, uri);
     receiver.sendImg(gid, "", "", new InputFile(img, "mybar.png"), Arrays.asList(Arrays.asList(Arrays.asList(
-      Arrays.asList("点击查看原图", Config.U2Domain + uri)
+            Arrays.asList("点击查看原图", BotInitializer.U2Domain + uri)
     ))));
   }
 

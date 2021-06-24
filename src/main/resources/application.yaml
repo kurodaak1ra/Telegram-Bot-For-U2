@@ -12,8 +12,12 @@ user:
   id:
 
 bot:
-  token:
-  username:
+  token: ${BOT_TOKEN}
+  username: ${BOT_NAME}
+  proxy:
+    host: ${PROXY_HOST}
+    port: ${PROXY_PORT}
+    type: ${PROXY_TYPE} #SOCKS4 | SOCKS5 | HTTP
 
 u2:
   domain: https://u2.dmhy.org
