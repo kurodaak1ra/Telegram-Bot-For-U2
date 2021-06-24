@@ -1,10 +1,9 @@
 package jp.ka.controller;
 
+import jp.ka.config.BotProperties;
 import jp.ka.config.Config;
 import jp.ka.utils.CommonUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.DefaultBotOptions;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
@@ -12,39 +11,42 @@ import org.telegram.telegrambots.meta.api.methods.groupadministration.LeaveChat;
 import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
-import org.telegram.telegrambots.meta.api.methods.updatingmessages.*;
-import org.telegram.telegrambots.meta.api.objects.*;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageMedia;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
+import org.telegram.telegrambots.meta.api.objects.InputFile;
+import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.api.objects.media.InputMedia;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
 
 @Slf4j
-@Component
 public class Receiver extends TelegramLongPollingBot {
 
-  @Value("${bot.token}")
-  private String token;
-  @Value("${bot.username}")
-  private String username;
-
-  private final CommandResolver commandResolver;
+  private final CommandResolver  commandResolver;
   private final CallbackResolver callbackResolver;
+  private final BotProperties    botProperties;
 
-  public Receiver(CommandResolver commandResolver, CallbackResolver callbackResolver, DefaultBotOptions options) {
-    super(options);
+  public Receiver(CommandResolver commandResolver, CallbackResolver callbackResolver,
+                  BotProperties botProperties, DefaultBotOptions botOptions) {
+    super(botOptions);
     this.commandResolver = commandResolver;
     this.callbackResolver = callbackResolver;
+    this.botProperties = botProperties;
   }
 
   @Override
   public String getBotUsername() {
-    return username;
+    return botProperties.getUsername();
   }
 
   @Override
   public String getBotToken() {
-    return token;
+    return botProperties.getToken();
   }
 
   @Override
