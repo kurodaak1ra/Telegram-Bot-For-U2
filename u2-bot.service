@@ -1,6 +1,6 @@
 [Unit]
-Description=Telegram Bot For U2
-After=network.target nginx.service
+Description=Telegram Bot - U2 Tool Box
+After=network.target
 
 [Service]
 Type=simple
