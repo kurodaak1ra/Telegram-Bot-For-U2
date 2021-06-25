@@ -4,7 +4,7 @@ import com.google.common.base.Functions;
 import com.google.common.collect.Lists;
 import jp.ka.command.Command;
 import jp.ka.controller.Receiver;
-import jp.ka.utils.Store;
+import jp.ka.variable.Store;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Message;

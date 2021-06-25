@@ -3,9 +3,9 @@ package jp.ka.command.impl;
 import com.google.common.base.Functions;
 import com.google.common.collect.Lists;
 import jp.ka.command.Command;
-import jp.ka.config.Text;
+import jp.ka.variable.MsgTpl;
 import jp.ka.controller.Receiver;
-import jp.ka.utils.Store;
+import jp.ka.variable.Store;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -63,7 +63,7 @@ public class TransferDeleteCommand implements Command {
 
   @Override
   public Message prompt(Long gid) {
-    return receiver.sendMsg(gid, "md", Text.COMMAND_ERROR + "\n\n`/transfer_delete`\n`<uid - 可多个空格分隔>`", null);
+    return receiver.sendMsg(gid, "md", MsgTpl.COMMAND_ERROR + "\n\n`/transfer_delete`\n`<uid - 可多个空格分隔>`", null);
   }
 
 }

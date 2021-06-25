@@ -1,8 +1,7 @@
 package jp.ka.command.impl;
 
 import jp.ka.command.Command;
-import jp.ka.config.Config;
-import jp.ka.config.U2;
+import jp.ka.variable.U2;
 import jp.ka.controller.Receiver;
 import jp.ka.utils.HttpUtils;
 import lombok.SneakyThrows;

@@ -2,13 +2,12 @@ package jp.ka.callback.impl;
 
 import jp.ka.callback.Callback;
 import jp.ka.command.impl.SignCommand;
-import jp.ka.config.Text;
+import jp.ka.variable.MsgTpl;
 import jp.ka.controller.Receiver;
 import jp.ka.exception.HttpException;
 import jp.ka.utils.HttpUtils;
-import jp.ka.utils.RedisUtils;
 import jp.ka.bean.RespGet;
-import jp.ka.utils.Store;
+import jp.ka.variable.Store;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 import org.jsoup.nodes.Element;
@@ -35,7 +34,7 @@ public class SignCallback implements Callback {
     String mark = (String) cache.get("mark");
     if (!mark.equals(Store.SIGN_MESSAGE_MARK)) {
       receiver.sendDel(gid, mid);
-      receiver.sendCallbackAnswer(qid, true, Text.CALLBACK_EXPIRE);
+      receiver.sendCallbackAnswer(qid, true, MsgTpl.CALLBACK_EXPIRE);
       return;
     }
 
@@ -48,7 +47,7 @@ public class SignCallback implements Callback {
         break;
       }
       case "refresh": {
-        receiver.sendCallbackAnswer(qid, false, Text.CALLBACK_REFRESH);
+        receiver.sendCallbackAnswer(qid, false, MsgTpl.CALLBACK_REFRESH);
         refresh(gid);
         break;
       }

@@ -3,14 +3,14 @@ package jp.ka.command.impl;
 import jp.ka.bean.RespGet;
 import jp.ka.bean.RespPost;
 import jp.ka.command.Command;
-import jp.ka.config.Text;
-import jp.ka.config.U2;
+import jp.ka.variable.MsgTpl;
+import jp.ka.variable.U2;
 import jp.ka.controller.Receiver;
 import jp.ka.exception.HttpException;
 import jp.ka.utils.CommonUtils;
 import jp.ka.utils.HttpUtils;
 import jp.ka.utils.RedisUtils;
-import jp.ka.utils.Store;
+import jp.ka.variable.Store;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 import org.jsoup.Jsoup;
@@ -90,7 +90,7 @@ public class MagicController implements Command {
 
   @Override
   public Message prompt(Long gid) {
-    return receiver.sendMsg(gid, "md", Text.COMMAND_ERROR + "\n\n`/magic`\n`tid - 种子 ID`\n`uid - 用户 ID (ALL 全局)`\n`hours - 时限`\n`promotion - \\{\n  2: Free\n  3: 2X\n  4: 2X Free\n  5: 50%\n  6: 2X 50%\n  7: 30%\n  8: Custom (8 1.00 2.00)\n\\}`", null);
+    return receiver.sendMsg(gid, "md", MsgTpl.COMMAND_ERROR + "\n\n`/magic`\n`tid - 种子 ID`\n`uid - 用户 ID (ALL 全局)`\n`hours - 时限`\n`promotion - \\{\n  2: Free\n  3: 2X\n  4: 2X Free\n  5: 50%\n  6: 2X 50%\n  7: 30%\n  8: Custom (8 1.00 2.00)\n\\}`", null);
   }
 
   private String cacheData(String source, List<NameValuePair> params) {

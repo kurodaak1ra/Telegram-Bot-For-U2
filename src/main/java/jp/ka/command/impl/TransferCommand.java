@@ -1,11 +1,11 @@
 package jp.ka.command.impl;
 
 import jp.ka.command.Command;
-import jp.ka.config.Text;
+import jp.ka.variable.MsgTpl;
 import jp.ka.controller.Receiver;
 import jp.ka.utils.HttpUtils;
 import jp.ka.bean.RespPost;
-import jp.ka.utils.Store;
+import jp.ka.variable.Store;
 import lombok.SneakyThrows;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
@@ -68,7 +68,7 @@ public class TransferCommand implements Command {
 
   @Override
   public Message prompt(Long gid) {
-    return receiver.sendMsg(gid, "md", Text.COMMAND_ERROR + "\n\n`/transfer`\n`<uid - 可多个，空格分隔>`\n`<amount - 转账数量>`\n`<message - 留言 (可省略)>`", null);
+    return receiver.sendMsg(gid, "md", MsgTpl.COMMAND_ERROR + "\n\n`/transfer`\n`<uid - 可多个，空格分隔>`\n`<amount - 转账数量>`\n`<message - 留言 (可省略)>`", null);
   }
 
   @SneakyThrows

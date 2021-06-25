@@ -2,8 +2,8 @@ package jp.ka.controller;
 
 import jp.ka.command.Command;
 import jp.ka.config.Config;
-import jp.ka.config.Text;
-import jp.ka.utils.Store;
+import jp.ka.variable.MsgTpl;
+import jp.ka.variable.Store;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -42,7 +42,7 @@ public class CommandResolver {
           Message prompt = command.prompt(msg.getChatId());
           if (Objects.nonNull(prompt)) return;
         }
-        Message waiting = Store.context.getBean(Receiver.class).sendMsg(msg.getChatId(), "md", Text.WAITING, null);
+        Message waiting = Store.context.getBean(Receiver.class).sendMsg(msg.getChatId(), "md", MsgTpl.WAITING, null);
         new Timer().schedule(new TimerTask() {
           @Override
           public void run() {

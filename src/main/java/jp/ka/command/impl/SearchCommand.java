@@ -3,13 +3,13 @@ package jp.ka.command.impl;
 import jp.ka.bean.RespGet;
 import jp.ka.command.Command;
 import jp.ka.config.Config;
-import jp.ka.config.Text;
+import jp.ka.variable.MsgTpl;
 import jp.ka.controller.Receiver;
 import jp.ka.exception.HttpException;
 import jp.ka.utils.CommonUtils;
 import jp.ka.utils.HttpUtils;
 import jp.ka.utils.RedisUtils;
-import jp.ka.utils.Store;
+import jp.ka.variable.Store;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,7 +78,7 @@ public class SearchCommand implements Command {
 
   @Override
   public Message prompt(Long gid) {
-    return receiver.sendMsg(gid, "md", Text.COMMAND_ERROR + "\n\n`/search`\n`<keywords - 关键词 (可省略)>`", null);
+    return receiver.sendMsg(gid, "md", MsgTpl.COMMAND_ERROR + "\n\n`/search`\n`<keywords - 关键词 (可省略)>`", null);
   }
 
   private String formatName(String msg) {

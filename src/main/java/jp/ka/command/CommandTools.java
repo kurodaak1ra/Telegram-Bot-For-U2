@@ -2,13 +2,13 @@ package jp.ka.command;
 
 import jp.ka.bean.U2Info;
 import jp.ka.config.Config;
-import jp.ka.config.U2;
+import jp.ka.variable.U2;
 import jp.ka.controller.Receiver;
 import jp.ka.mapper.U2Mapper;
 import jp.ka.utils.CommonUtils;
 import jp.ka.utils.HttpUtils;
 import jp.ka.bean.RespGet;
-import jp.ka.utils.Store;
+import jp.ka.variable.Store;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;

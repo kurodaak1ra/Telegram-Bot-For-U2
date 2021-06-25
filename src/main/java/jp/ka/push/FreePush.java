@@ -2,16 +2,19 @@ package jp.ka.push;
 
 import jp.ka.bean.RespGet;
 import jp.ka.config.Config;
-import jp.ka.config.U2;
+import jp.ka.variable.MsgTpl;
+import jp.ka.variable.U2;
 import jp.ka.controller.Receiver;
+import jp.ka.exception.HttpException;
 import jp.ka.utils.CommonUtils;
 import jp.ka.utils.HttpUtils;
-import jp.ka.utils.Store;
+import jp.ka.variable.Store;
 import lombok.SneakyThrows;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -36,7 +39,7 @@ public class FreePush {
       }
     };
     timer.purge();
-    timer.schedule(timerTask, 0, 30 * 1000);
+    timer.schedule(timerTask, 0, Store.PUSH_INTERVAL_TIME);
   }
 
   public static void stop() {
@@ -46,40 +49,49 @@ public class FreePush {
     timerTask = null;
   }
 
-  @SneakyThrows
   private static void free() {
-    RespGet resp = HttpUtils.get(Config.id, "/promotion.php?action=list");
-    if (resp.getCode() != 200) return;
-    Elements tables = resp.getHtml().getElementById("outer").getElementsByTag("table");
-    Element content = tables.get(tables.size() - 1);
+    RespGet resp = null;
+    try {
+      resp = HttpUtils.get(Config.id, "/promotion.php?action=list");
+      Elements tables = resp.getHtml().getElementById("outer").getElementsByTag("table");
+      Element content = tables.get(tables.size() - 1);
 
-    Elements rows = content.child(0).children();
-    outer:for (int i = 1; i < rows.size(); i++) {
-      Elements columns = rows.get(i).children();
-      String fid = columns.get(0).text();
-      String type = columns.get(1).text();
-      String torrent = columns.get(2).text();
-      String forr = columns.get(3).text();
-      String status = columns.get(5).text();
+      Elements rows = content.child(0).children();
+      for (int i = 1; i < rows.size(); i++) {
+        Elements columns = rows.get(i).children();
+        String fid = columns.get(0).text();
+        String type = columns.get(1).text();
+        String torrent = columns.get(2).text();
+        String to = columns.get(3).text();
+        String status = columns.get(5).text();
 
-      inner:for (Map.Entry<String, Map<String, String>> entry : Store.FREE_INFO.entrySet()) {
-        if (!entry.getKey().equals(fid)) continue inner;
-        Map<String, String> val = entry.getValue();
-        long difference = SDF.parse(val.get("end_time") + " +0800").getTime() - new Date().getTime();
-        if (difference <= 0) {
-          Store.FREE_INFO.remove(fid);
-          Store.context.getBean(Receiver.class).sendMsg(Config.id, "md",  String.format("*全站 FREE 到期提醒*\n\n魔法: [\\#%s](%s/promotion.php?action=detail&id=%s)\n创建: [%s](%s/userdetails.php?id=%s)\n开始: `%s`\n结束: `%s`\n类型: `%s`\n备注: `%s`",
-            fid, Config.U2Domain, fid, val.get("cname"), Config.U2Domain, val.get("cid"), val.get("create_time"), val.get("end_time"), val.get("rate"), val.get("remarks")), null);
-          break inner;
+        if (Store.FREE_INFO.containsKey(fid)) {
+          Map<String, String> val = Store.FREE_INFO.get(fid);
+          long difference = SDF.parse(val.get("end_time") + " +0800").getTime() - new Date().getTime();
+          if (difference <= 0) {
+            Store.FREE_INFO.remove(fid);
+            Store.context.getBean(Receiver.class).sendMsg(Config.id, "md",  String.format("*全站 FREE 到期提醒*\n\n魔法: [\\#%s](%s/promotion.php?action=detail&id=%s)\n创建: [%s](%s/userdetails.php?id=%s)\n开始: `%s`\n结束: `%s`\n类型: `%s`\n备注: `%s`",
+              fid, Config.U2Domain, fid, val.get("cname"), Config.U2Domain, val.get("cid"), val.get("create_time"), val.get("end_time"), val.get("rate"), val.get("remarks")), null);
+          }
+          continue;
+        }
+
+        if (type.equals("魔法") && torrent.equals("全局") && to.equals("所有人") && status.equals("有效")) {
+          freeNotice(fid);
         }
       }
-
-      if (type.equals("魔法") && torrent.equals("全局") && forr.equals("所有人") && status.equals("有效")) {
-        freeNotice(fid);
-        break outer;
+      Store.FREE_PUSH_REQ_FAILED_TIMES = 0;
+    } catch (HttpException | ParseException e) {
+      if (resp.getCode() >= 500) {
+        if (Store.FREE_PUSH_REQ_FAILED_TIMES >= 10) {
+          stop();
+          Store.FREE_PUSH_REQ_FAILED_TIMES = 0;
+          Store.context.getBean(Receiver.class).sendMsg( Config.id, "md", String.format(MsgTpl.PUSH_FAILED_MULTIPLE_TIMES, "FREE"), null);
+        } else Store.FREE_PUSH_REQ_FAILED_TIMES++;
       }
     }
   }
+
   @SneakyThrows
   private static void freeNotice(String fid) {
     RespGet resp = HttpUtils.get(Config.id, "/promotion.php?action=detail&id=" + fid);
@@ -119,6 +131,5 @@ public class FreePush {
     Store.context.getBean(Receiver.class).sendMsg(Config.id, "md", String.format("*全站 FREE 提醒*\n\n魔法: [\\#%s](%s/promotion.php?action=detail&id=%s)\n创建: [%s](%s/userdetails.php?id=%s)\n开始: `%s`\n结束: `%s`\n类型: `%s`\n备注: `%s`",
       fid, Config.U2Domain, fid, CommonUtils.formatMD(cname), Config.U2Domain, cid, createTime, endTime, CommonUtils.torrentStatus(rate, rateUp, rateDown), remarks), null);
   }
-
 
 }

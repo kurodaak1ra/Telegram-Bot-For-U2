@@ -1,9 +1,9 @@
 package jp.ka.controller;
 
 import jp.ka.callback.Callback;
-import jp.ka.config.Text;
+import jp.ka.variable.MsgTpl;
 import jp.ka.utils.RedisUtils;
-import jp.ka.utils.Store;
+import jp.ka.variable.Store;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
@@ -50,13 +50,13 @@ public class CallbackResolver {
       cache = (Map<String, Object>) redis.get(data[1]);
       if (Objects.isNull(cache)) {
         Store.context.getBean(Receiver.class).sendDel(gid, mid);
-        Store.context.getBean(Receiver.class).sendCallbackAnswer(qid, false, Text.CALLBACK_EXPIRE);
+        Store.context.getBean(Receiver.class).sendCallbackAnswer(qid, false, MsgTpl.CALLBACK_EXPIRE);
         return;
       }
       if (cache.get("source").equals("close")) Store.context.getBean(Receiver.class).sendDel(gid, mid);
     }
 
-    Store.context.getBean(Receiver.class).sendCallbackAnswer(qid, false, Text.CALLBACK_WAITING);
+    Store.context.getBean(Receiver.class).sendCallbackAnswer(qid, false, MsgTpl.CALLBACK_WAITING);
     callback.execute(query, cbData, cache);
   }
 

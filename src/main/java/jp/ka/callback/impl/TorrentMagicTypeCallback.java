@@ -4,7 +4,7 @@ import jp.ka.bean.RespPost;
 import jp.ka.callback.Callback;
 import jp.ka.command.impl.MagicController;
 import jp.ka.controller.Receiver;
-import jp.ka.utils.Store;
+import jp.ka.variable.Store;
 import lombok.SneakyThrows;
 import org.apache.http.NameValuePair;
 import org.springframework.beans.factory.annotation.Autowired;

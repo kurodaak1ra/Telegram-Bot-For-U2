@@ -3,10 +3,12 @@ package jp.ka.push;
 import jp.ka.bean.RespGet;
 import jp.ka.config.Config;
 import jp.ka.controller.Receiver;
+import jp.ka.exception.HttpException;
 import jp.ka.utils.CommonUtils;
 import jp.ka.utils.HttpUtils;
 import jp.ka.utils.PhantomjsUtils;
-import jp.ka.utils.Store;
+import jp.ka.variable.MsgTpl;
+import jp.ka.variable.Store;
 import lombok.SneakyThrows;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -30,7 +32,7 @@ public class PmPush {
       }
     };
     timer.purge();
-    timer.schedule(timerTask, 0, 30 * 1000);
+    timer.schedule(timerTask, 0, Store.PUSH_INTERVAL_TIME);
   }
 
   public static void stop() {
@@ -41,30 +43,42 @@ public class PmPush {
   }
 
   private static void pm() {
-    RespGet resp = HttpUtils.get(Config.id, "/messages.php");
-    if (resp.getCode() != 200) return;
-    Elements tables = resp.getHtml().getElementById("outer").getElementsByTag("table");
-    Element content = tables.get(tables.size() - 1);
+    RespGet resp = null;
+    try {
+      resp = HttpUtils.get(Config.id, "/messages.php");
+      Elements tables = resp.getHtml().getElementById("outer").getElementsByTag("table");
+      Element content = tables.get(tables.size() - 1);
 
-    Elements rows = content.child(0).children();
-    for (int i = 1; i < rows.size() - 2; i++) {
-      Element columns = rows.get(i);
-      if (!columns.child(0).child(0).attr("class").equals("unreadpm")) continue;
-      Element msg = columns.child(1).child(0);
-      String mid = msg.attr("href").split("id=")[1];
-      String theme = msg.text();
+      Elements rows = content.child(0).children();
+      for (int i = 1; i < rows.size() - 2; i++) {
+        Element columns = rows.get(i);
+        if (!columns.child(0).child(0).attr("class").equals("unreadpm")) continue;
+        Element msg = columns.child(1).child(0);
+        String mid = msg.attr("href").split("id=")[1];
+        String theme = msg.text();
 
-      Elements tmpSender = columns.child(2).getElementsByTag("a");
-      Element sender = columns.child(2);
-      if (tmpSender.size() != 0) sender = tmpSender.get(0);
-      String[] sid = sender.attr("href").split("id=");
-      String sname = sender.text();
+        Elements tmpSender = columns.child(2).getElementsByTag("a");
+        Element sender = columns.child(2);
+        if (tmpSender.size() != 0) sender = tmpSender.get(0);
+        String[] sid = sender.attr("href").split("id=");
+        String sname = sender.text();
 
-      String time =  columns.child(3).child(0).attr("title");
+        String time =  columns.child(3).child(0).attr("title");
 
-      pmNotice(mid, theme, sid.length != 2 ? null : sid[1], sname, time);
+        pmNotice(mid, theme, sid.length != 2 ? null : sid[1], sname, time);
+      }
+      Store.PM_PUSH_REQ_FAILED_TIMES = 0;
+    } catch (HttpException e) {
+      if (resp.getCode() >= 500) {
+        if (Store.PM_PUSH_REQ_FAILED_TIMES >= 10) {
+          stop();
+          Store.PM_PUSH_REQ_FAILED_TIMES = 0;
+          Store.context.getBean(Receiver.class).sendMsg( Config.id, "md", String.format(MsgTpl.PUSH_FAILED_MULTIPLE_TIMES, "PM"), null);
+        } else Store.PM_PUSH_REQ_FAILED_TIMES++;
+      }
     }
   }
+
   @SneakyThrows
   private static void pmNotice(String mid, String theme, String sid, String sname, String time) {
     String from = "`" + sname + "`";

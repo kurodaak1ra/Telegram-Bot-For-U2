@@ -3,7 +3,7 @@ package jp.ka.callback.impl;
 import jp.ka.bean.RespPost;
 import jp.ka.callback.Callback;
 import jp.ka.config.Config;
-import jp.ka.config.U2;
+import jp.ka.variable.U2;
 import jp.ka.controller.Receiver;
 import jp.ka.utils.CommonUtils;
 import jp.ka.utils.HttpUtils;

@@ -4,13 +4,12 @@ import jp.ka.bean.RespGet;
 import jp.ka.callback.Callback;
 import jp.ka.command.impl.SearchCommand;
 import jp.ka.config.Config;
-import jp.ka.config.Text;
-import jp.ka.config.U2;
+import jp.ka.variable.MsgTpl;
 import jp.ka.controller.Receiver;
 import jp.ka.utils.CommonUtils;
 import jp.ka.utils.HttpUtils;
 import jp.ka.utils.RedisUtils;
-import jp.ka.utils.Store;
+import jp.ka.variable.Store;
 import lombok.SneakyThrows;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.TextNode;
@@ -40,7 +39,7 @@ public class SearchCallback implements Callback {
     String mark = (String) cache.get("mark");
     if (!mark.equals(Store.SEARCH_MARK) || Objects.isNull(items) || Objects.isNull(options)) {
       receiver.sendDel(gid, query.getMessage().getMessageId());
-      receiver.sendCallbackAnswer(query.getId(), true, Text.CALLBACK_EXPIRE);
+      receiver.sendCallbackAnswer(query.getId(), true, MsgTpl.CALLBACK_EXPIRE);
       return;
     }
 

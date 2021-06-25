@@ -1,7 +1,7 @@
 package jp.ka.callback.impl;
 
 import jp.ka.callback.Callback;
-import jp.ka.utils.Store;
+import jp.ka.variable.Store;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 

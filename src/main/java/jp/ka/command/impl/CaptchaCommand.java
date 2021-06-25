@@ -3,7 +3,7 @@ package jp.ka.command.impl;
 import jp.ka.command.Command;
 import jp.ka.controller.Receiver;
 import jp.ka.utils.HttpUtils;
-import jp.ka.utils.Store;
+import jp.ka.variable.Store;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

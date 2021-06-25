@@ -2,7 +2,7 @@ package jp.ka.callback.impl;
 
 import jp.ka.callback.Callback;
 import jp.ka.controller.Receiver;
-import jp.ka.utils.Store;
+import jp.ka.variable.Store;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;

@@ -6,7 +6,7 @@ import jp.ka.exception.HttpException;
 import jp.ka.utils.HttpUtils;
 import jp.ka.utils.RedisUtils;
 import jp.ka.bean.RespGet;
-import jp.ka.utils.Store;
+import jp.ka.variable.Store;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;

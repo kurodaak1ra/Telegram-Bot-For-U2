@@ -4,14 +4,13 @@ import jp.ka.bean.U2Cookie;
 import jp.ka.command.Command;
 import jp.ka.command.CommandTools;
 import jp.ka.config.Config;
-import jp.ka.config.Text;
+import jp.ka.variable.MsgTpl;
 import jp.ka.controller.Receiver;
 import jp.ka.exception.HttpException;
 import jp.ka.mapper.U2Mapper;
-import jp.ka.utils.CommonUtils;
 import jp.ka.utils.HttpUtils;
 import jp.ka.bean.RespPost;
-import jp.ka.utils.Store;
+import jp.ka.variable.Store;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
@@ -106,7 +105,7 @@ public class LoginCommand implements Command {
 
   @Override
   public Message prompt(Long gid) {
-    return receiver.sendMsg(gid, "md", Text.COMMAND_ERROR + "\n\n`/login`\n`<user@example\\.com>`\n`<password>`\n`<captcha code>`", null);
+    return receiver.sendMsg(gid, "md", MsgTpl.COMMAND_ERROR + "\n\n`/login`\n`<user@example\\.com>`\n`<password>`\n`<captcha code>`", null);
   }
 
 }

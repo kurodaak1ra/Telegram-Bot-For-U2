@@ -5,9 +5,10 @@ import com.google.gson.Gson;
 import jp.ka.bean.RespGet;
 import jp.ka.bean.RespPost;
 import jp.ka.config.Config;
-import jp.ka.config.Text;
 import jp.ka.controller.Receiver;
 import jp.ka.exception.HttpException;
+import jp.ka.variable.MsgTpl;
+import jp.ka.variable.Store;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -106,7 +107,7 @@ public class HttpUtils {
       return sslsf;
     } catch (GeneralSecurityException e) {
       log.error("[createSSLConnSocketFactory Exception]", e);
-      Store.context.getBean(Receiver.class).sendMsg(gid, "md", Text.REQUEST_ERROR, null);
+      Store.context.getBean(Receiver.class).sendMsg(gid, "md", MsgTpl.REQUEST_ERROR, null);
       throw new HttpException(501, e.getMessage());
     }
   }
@@ -132,17 +133,17 @@ public class HttpUtils {
       // log.info("[{} Response Body <{}> <{}>]\n\n{}\n", request.getMethod(), code, request.getURI(), new String(result));
       if (Objects.nonNull(html) && !html.getIs()) log.info("[{} Response Body <{}> <{}>]\n\n{}\n", request.getMethod(), code, request.getURI(), new String(result));
       if (code >= 400 && code < 500) {
-        Store.context.getBean(Receiver.class).sendMsg(gid, "md", Text.NOT_FOUND, null);
+        Store.context.getBean(Receiver.class).sendMsg(gid, "md", MsgTpl.NOT_FOUND, null);
         throw new HttpException(code, result.toString());
       }
       if (code >= 500) {
-        Store.context.getBean(Receiver.class).sendMsg(gid, "md", Text.U2_SERVER_ERROR, null);
+        Store.context.getBean(Receiver.class).sendMsg(gid, "md", MsgTpl.U2_SERVER_ERROR, null);
         throw new HttpException(code, result.toString());
       }
       return new Response(response, code, result, html);
     } catch (IOException e) {
       log.error("[Request Exception "+ request.getURI() +"]", e);
-      Store.context.getBean(Receiver.class).sendMsg(gid, "md", Text.REQUEST_ERROR, null);
+      Store.context.getBean(Receiver.class).sendMsg(gid, "md", MsgTpl.REQUEST_ERROR, null);
       throw new HttpException(502, e.getMessage());
     } finally {
       request.releaseConnection();
@@ -216,7 +217,7 @@ public class HttpUtils {
     Elements title = html.getElementsByTag("title");
     if (title.size() == 0) return;
     if (title.get(0).text().equals("Access Point :: U2")) {
-      Store.context.getBean(Receiver.class).sendMsg(gid, "md", Text.LOGIN_EXPIRE, null);
+      Store.context.getBean(Receiver.class).sendMsg(gid, "md", MsgTpl.LOGIN_EXPIRE, null);
       Store.STEP = null;
       Config.id = null;
       session.clear();
