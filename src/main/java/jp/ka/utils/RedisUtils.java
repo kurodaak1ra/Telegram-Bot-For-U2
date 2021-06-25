@@ -93,7 +93,6 @@ public class RedisUtils {
   public boolean expired(String key, int expireTime) {
     Redis item = cache.get(key);
     if (Objects.isNull(item)) return false;
-    // cache.remove(key);
     return setCloneValue(key, item.getValue(), expireTime);
   }
 
@@ -104,7 +103,6 @@ public class RedisUtils {
       tmp.add(value);
       setCloneValue(key, tmp, expireTime);
     } else {
-      // cache.remove(key);
       List<Object> tmp = (List<Object>) item.getValue();
       tmp.add(value);
       setCloneValue(key, tmp, item.getExpireTime());
@@ -114,7 +112,6 @@ public class RedisUtils {
   public Object lpop(String key) {
     Redis item = cache.get(key);
     if (Objects.isNull(item)) return null;
-    // cache.remove(key);
     List<Object> tmp = (List<Object>) item.getValue();
     if (tmp.size() == 0) return null;
     Object rm = tmp.remove(tmp.size() - 1);
@@ -129,7 +126,6 @@ public class RedisUtils {
       tmp.add(value);
       setCloneValue(key, tmp, expireTime);
     } else {
-      // cache.remove(key);
       List<Object> tmp = (List<Object>) item.getValue();
       tmp.add(0, value);
       setCloneValue(key, tmp, item.getExpireTime());
@@ -139,7 +135,6 @@ public class RedisUtils {
   public Object lunshift(String key) {
     Redis item = cache.get(key);
     if (Objects.isNull(item)) return null;
-    // cache.remove(key);
     List<Object> tmp = (List<Object>) item.getValue();
     if (tmp.size() == 0) return null;
     Object rm = tmp.remove(0);
@@ -150,7 +145,6 @@ public class RedisUtils {
   public Boolean lremove(String key, Object value) {
     Redis item = cache.get(key);
     if (Objects.isNull(item)) return null;
-    // cache.remove(key);
     List<Object> tmp = (List<Object>) item.getValue();
     boolean rm = tmp.remove(value);
     setCloneValue(key, tmp, item.getExpireTime());

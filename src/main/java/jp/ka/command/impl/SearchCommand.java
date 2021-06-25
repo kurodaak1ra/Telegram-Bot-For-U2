@@ -1,8 +1,8 @@
 package jp.ka.command.impl;
 
 import jp.ka.bean.RespGet;
+import jp.ka.bean.config.U2;
 import jp.ka.command.Command;
-import jp.ka.config.BotInitializer;
 import jp.ka.variable.MsgTpl;
 import jp.ka.controller.Receiver;
 import jp.ka.exception.HttpException;
@@ -22,6 +22,9 @@ import java.util.*;
 
 @Component
 public class SearchCommand implements Command {
+
+  @Autowired
+  private U2 u2;
 
   @Autowired
   private RedisUtils redis;
@@ -213,12 +216,12 @@ public class SearchCommand implements Command {
 
       Map<String, String> item = items.get(i);
       sb.append(String.format("*%s*\\. `\uD83D\uDCBE%s\\|%s\\|\uD83C\uDE39%s`\n[%s](%s)\n",
-              index,
-              formatSize(item.get("size")),
-              "\uD83D\uDC46" + item.get("seeder") + "\uD83D\uDC47" + item.get("downloader"),
-              CommonUtils.torrentStatus(item.get("status"), item.get("status_promotion_upload"), item.get("status_promotion_download")),
-              formatName(item.get("name")),
-              BotInitializer.U2Domain + "/details.php?id=" + item.get("tid") + "&hit=1")
+        index,
+        formatSize(item.get("size")),
+        "\uD83D\uDC46" + item.get("seeder") + "\uD83D\uDC47" + item.get("downloader"),
+        CommonUtils.torrentStatus(item.get("status"), item.get("status_promotion_upload"), item.get("status_promotion_download")),
+        formatName(item.get("name")),
+        u2.getDomain() + "/details.php?id=" + item.get("tid") + "&hit=1")
       );
 
       String uuid = cacheData("item", Store.SEARCH_MARK, null, i);

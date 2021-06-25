@@ -1,7 +1,7 @@
 package jp.ka.command.impl;
 
 import jp.ka.command.Command;
-import jp.ka.variable.U2;
+import jp.ka.variable.U2Info;
 import jp.ka.controller.Receiver;
 import jp.ka.utils.HttpUtils;
 import lombok.SneakyThrows;
@@ -20,7 +20,7 @@ public class LogoutCommand implements Command {
   public void execute(Message msg) {
     Long gid = msg.getChatId();
 
-    HttpUtils.get(gid, "/logout.php?key=" + U2.pageKey);
+    HttpUtils.get(gid, "/logout.php?key=" + U2Info.pageKey);
     HttpUtils.session.clear();
     receiver.sendMsg(gid, "md", "*登出成功！*", null);
   }

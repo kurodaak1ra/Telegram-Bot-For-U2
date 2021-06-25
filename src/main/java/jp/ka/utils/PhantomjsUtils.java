@@ -1,6 +1,7 @@
 package jp.ka.utils;
 
-import jp.ka.config.BotInitializer;
+import jp.ka.bean.config.Phantomjs;
+import jp.ka.bean.config.U2;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.openqa.selenium.*;
@@ -8,6 +9,8 @@ import org.openqa.selenium.phantomjs.PhantomJSDriver;
 import org.openqa.selenium.phantomjs.PhantomJSDriverService;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -16,11 +19,28 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
+@Component
 public class PhantomjsUtils {
+
+  private static U2 u2;
+  private static Phantomjs phantomjs;
+
+  @Autowired
+  public void setU2(U2 u2) {
+    this.u2 = u2;
+  }
+  @Autowired
+  public void setPhantomjs(Phantomjs phantomjs) {
+    this.phantomjs = phantomjs;
+  }
 
   private static final String U2_COOKIE_KEY = "nexusphp_u2";
 
-  public static PhantomJSDriver driver = getPhantomJs();
+  public static PhantomJSDriver driver;
+
+  public static void init() {
+    driver = getPhantomJs();
+  }
 
   private static PhantomJSDriver getPhantomJs() {
     DesiredCapabilities dc = new DesiredCapabilities();
@@ -29,8 +49,8 @@ public class PhantomjsUtils {
     dc.setCapability("takesScreenshot",true);
     dc.setCapability("cssSelectorsEnabled", true);
     dc.setCapability(PhantomJSDriverService.PHANTOMJS_PAGE_SETTINGS_PREFIX + "userAgent", HttpUtils.UA);
-      dc.setCapability(PhantomJSDriverService.PHANTOMJS_PAGE_CUSTOMHEADERS_PREFIX + "User-Agent", HttpUtils.UA);
-      dc.setCapability(PhantomJSDriverService.PHANTOMJS_EXECUTABLE_PATH_PROPERTY, BotInitializer.phantomjs);
+    dc.setCapability(PhantomJSDriverService.PHANTOMJS_PAGE_CUSTOMHEADERS_PREFIX + "User-Agent", HttpUtils.UA);
+    dc.setCapability(PhantomJSDriverService.PHANTOMJS_EXECUTABLE_PATH_PROPERTY, phantomjs.getPath());
 
     PhantomJSDriver phantomJSDriver = new PhantomJSDriver(dc);
     phantomJSDriver.manage().window().maximize(); // 窗口最大化
@@ -49,18 +69,18 @@ public class PhantomjsUtils {
       if (ck.getName().equals(U2_COOKIE_KEY)) login = true;
     }
     if (!login) {
-        driver.get(BotInitializer.U2Domain + "/portal.php");
+      driver.get(u2.getDomain() + "/portal.php");
 
       Calendar c = Calendar.getInstance();
       c.setTime(new Date());
       c.add(Calendar.YEAR, 1);
       HashSet<Cookie> set = new HashSet<>();
       set.add(new Cookie(
-              U2_COOKIE_KEY,
-              HttpUtils.session.get(U2_COOKIE_KEY),
-              BotInitializer.U2Domain.split("//")[1],
-              "/",
-              c.getTime()
+        U2_COOKIE_KEY,
+        HttpUtils.session.get(U2_COOKIE_KEY),
+        u2.getDomain().split("//")[1],
+        "/",
+        c.getTime()
       ));
       setCookies(driver, set);
     }

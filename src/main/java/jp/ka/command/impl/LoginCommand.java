@@ -1,10 +1,10 @@
 package jp.ka.command.impl;
 
 import jp.ka.bean.RespPost;
-import jp.ka.bean.U2Cookie;
+import jp.ka.bean.config.User;
+import jp.ka.bean.UserCookie;
 import jp.ka.command.Command;
 import jp.ka.command.CommandTools;
-import jp.ka.config.BotInitializer;
 import jp.ka.variable.MsgTpl;
 import jp.ka.controller.Receiver;
 import jp.ka.exception.HttpException;
@@ -25,6 +25,9 @@ import java.util.Objects;
 @Slf4j
 @Component
 public class LoginCommand implements Command {
+
+  @Autowired
+  private User user;
 
   @Autowired
   private U2Mapper mapper;
@@ -79,11 +82,11 @@ public class LoginCommand implements Command {
         return;
       }
       Store.STEP = null;
-      BotInitializer.id = gid;
+      user.setUid(gid);
       receiver.sendMsg(gid, "md", "*登陆成功*", null);
-      CommandTools.loginSucc();
+      CommandTools.loginSucc(gid);
       for (Map.Entry<String, String> entry : HttpUtils.session.entrySet()) {
-        mapper.insertCookies(new U2Cookie(entry.getKey(), entry.getValue()));
+        mapper.insertCookies(new UserCookie(entry.getKey(), entry.getValue()));
       }
     } catch (HttpException e) { }
   }

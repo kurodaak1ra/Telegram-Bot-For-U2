@@ -3,43 +3,27 @@
 
 <mapper namespace="jp.ka.mapper.U2Mapper">
 
-  <resultMap id="infoMap" type="jp.ka.bean.U2Info">
+  <resultMap id="infoMap" type="jp.ka.bean.UserInfo">
     <result property="id" column="id"/>
     <result property="uid" column="uid"/>
     <result property="pageKey" column="page_key"/>
     <result property="passKey" column="pass_key"/>
   </resultMap>
 
-  <resultMap id="cookieMap" type="jp.ka.bean.U2Cookie">
+  <resultMap id="cookieMap" type="jp.ka.bean.UserCookie">
     <result property="k" column="k"/>
     <result property="v" column="v"/>
   </resultMap>
 
-  <insert id="insertInfo" parameterType="jp.ka.bean.U2Info">
+  <insert id="insertInfo" parameterType="jp.ka.bean.UserInfo">
     INSERT INTO info (id, uid, page_key, pass_key) VALUES (#{id}, #{uid}, #{pageKey}, #{passKey})
   </insert>
-
-  <!--<update id="updateInfo" parameterType="jp.ka.bean.U2Info">-->
-  <!--  UPDATE info SET-->
-  <!--  <trim suffixOverrides=",">-->
-  <!--    <if test="uid != null and uid != ''">-->
-  <!--      uid = #{uid},-->
-  <!--    </if>-->
-  <!--    <if test="pageKey != null and pageKey != ''">-->
-  <!--      page_key = #{pageKey},-->
-  <!--    </if>-->
-  <!--    <if test="passKey != null and passKey != ''">-->
-  <!--      pass_key = #{passKey},-->
-  <!--    </if>-->
-  <!--  </trim>-->
-  <!--  WHERE id = #{id}-->
-  <!--</update>-->
 
   <select id="queryInfo" resultMap="infoMap">
     SELECT id, uid, page_key, pass_key FROM info
   </select>
 
-  <insert id="insertCookies" parameterType="jp.ka.bean.U2Cookie">
+  <insert id="insertCookies" parameterType="jp.ka.bean.UserCookie">
     INSERT INTO cookie (k, v) VALUES (#{k}, #{v})
   </insert>
 

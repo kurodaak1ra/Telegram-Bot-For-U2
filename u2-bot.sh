@@ -75,7 +75,7 @@ After=network.target
 [Service]
 Type=simple
 WorkingDirectory=/home/
-ExecStart=/usr/bin/java -jar /home/telegram-bot-for-u2-0.0.1-SNAPSHOT.jar --bot.username=$username --bot.token=$token --phantomjs=/home/phantomjs
+ExecStart=/usr/bin/java -jar /home/telegram-bot-for-u2-0.0.1-SNAPSHOT.jar --bot.username=$username --bot.token=$token --phantomjs.path=/home/phantomjs
 Restart=always
 RestartSec=5s
 

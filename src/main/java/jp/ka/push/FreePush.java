@@ -1,24 +1,40 @@
 package jp.ka.push;
 
 import jp.ka.bean.RespGet;
-import jp.ka.config.BotInitializer;
+import jp.ka.bean.config.U2;
+import jp.ka.bean.config.User;
 import jp.ka.controller.Receiver;
 import jp.ka.exception.HttpException;
 import jp.ka.utils.CommonUtils;
 import jp.ka.utils.HttpUtils;
 import jp.ka.variable.MsgTpl;
 import jp.ka.variable.Store;
-import jp.ka.variable.U2;
+import jp.ka.variable.U2Info;
 import lombok.SneakyThrows;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+@Component
 public class FreePush {
+
+  private static U2 u2;
+  private static User user;
+
+  @Autowired
+  public void setU2(U2 u2) {
+    this.u2 = u2;
+  }
+  @Autowired
+  public void setUser(User user) {
+    this.user = user;
+  }
 
   private static Timer timer = new Timer("free_push");
   private static TimerTask timerTask = null;
@@ -30,7 +46,7 @@ public class FreePush {
   }
 
   public static void start() {
-      if (Objects.isNull(BotInitializer.id) || Objects.nonNull(timerTask)) return;
+    if (Objects.isNull(user.getUid()) || Objects.nonNull(timerTask)) return;
     Store.FREE_PUSH = true;
     timerTask = new TimerTask() {
       @Override
@@ -52,7 +68,7 @@ public class FreePush {
   private static void free() {
     RespGet resp = null;
     try {
-      resp = HttpUtils.get(BotInitializer.id, "/promotion.php?action=list");
+      resp = HttpUtils.get(user.getUid(), "/promotion.php?action=list");
       Elements tables = resp.getHtml().getElementById("outer").getElementsByTag("table");
       Element content = tables.get(tables.size() - 1);
 
@@ -67,18 +83,16 @@ public class FreePush {
 
         if (Store.FREE_INFO.containsKey(fid)) {
           Map<String, String> val = Store.FREE_INFO.get(fid);
-        long difference = SDF.parse(val.get("end_time") + " +0800").getTime() - new Date().getTime();
-        if (difference <= 0) {
+          long difference = SDF.parse(val.get("end_time") + " +0800").getTime() - new Date().getTime();
+          if (difference <= 0) {
             Store.FREE_INFO.remove(fid);
-            Store.context.getBean(Receiver.class).sendMsg(BotInitializer.id, "md", String.format("*全站 FREE 到期提醒*\n\n魔法: [\\#%s](%s/promotion.php?action=detail&id=%s)\n创建: [%s](%s/userdetails.php?id=%s)\n开始: `%s`\n结束: `%s`\n类型: `%s`\n备注: `%s`",
-                    fid, BotInitializer.U2Domain, fid, val.get("cname"), BotInitializer.U2Domain, val.get("cid"), val.get("create_time"), val.get("end_time"), val.get("rate"), val.get("remarks")), null);
-            }
+            Store.context.getBean(Receiver.class).sendMsg(user.getUid(), "md", String.format("*全站 FREE 到期提醒*\n\n魔法: [\\#%s](%s/promotion.php?action=detail&id=%s)\n创建: [%s](%s/userdetails.php?id=%s)\n开始: `%s`\n结束: `%s`\n类型: `%s`\n备注: `%s`",
+            fid, u2.getDomain(), fid, val.get("cname"), u2.getDomain(), val.get("cid"), val.get("create_time"), val.get("end_time"), val.get("rate"), val.get("remarks")), null);
+          }
           continue;
         }
 
-        if (type.equals("魔法") && torrent.equals("全局") && to.equals("所有人") && status.equals("有效")) {
-          freeNotice(fid);
-        }
+        if (type.equals("魔法") && torrent.equals("全局") && to.equals("所有人") && status.equals("有效")) freeNotice(fid);
       }
       Store.FREE_PUSH_REQ_FAILED_TIMES = 0;
     } catch (HttpException | ParseException e) {
@@ -86,7 +100,7 @@ public class FreePush {
         if (Store.FREE_PUSH_REQ_FAILED_TIMES >= 10) {
           stop();
           Store.FREE_PUSH_REQ_FAILED_TIMES = 0;
-          Store.context.getBean(Receiver.class).sendMsg(BotInitializer.id, "md", String.format(MsgTpl.PUSH_FAILED_MULTIPLE_TIMES, "FREE"), null);
+          Store.context.getBean(Receiver.class).sendMsg(user.getUid(), "md", String.format(MsgTpl.PUSH_FAILED_MULTIPLE_TIMES, "FREE"), null);
         } else Store.FREE_PUSH_REQ_FAILED_TIMES++;
       }
     }
@@ -94,9 +108,9 @@ public class FreePush {
 
   @SneakyThrows
   private static void freeNotice(String fid) {
-      RespGet  resp    = HttpUtils.get(BotInitializer.id, "/promotion.php?action=detail&id=" + fid);
-      Elements tables  = resp.getHtml().getElementById("outer").getElementsByTag("table");
-    Element    content = tables.get(tables.size() - 1);
+    RespGet resp = HttpUtils.get(user.getUid(), "/promotion.php?action=detail&id=" + fid);
+    Elements tables = resp.getHtml().getElementById("outer").getElementsByTag("table");
+    Element content = tables.get(tables.size() - 1);
 
     Elements rows = content.child(0).children();
     Element creator = rows.get(3).child(1).getElementsByTag("a").get(0);
@@ -110,7 +124,7 @@ public class FreePush {
     String rate = _rate.child(0).attr("alt");
     String rateUp = null;
     String rateDown = null;
-    if (rate.equals(U2._PROMOTION)) {
+    if (rate.equals(U2Info._PROMOTION)) {
       rateUp = _rate.child(2).text();
       rateDown = _rate.child(4).text();
     }
@@ -118,18 +132,18 @@ public class FreePush {
     List<TextNode> mark = rows.get(7).child(1).getElementsByTag("fieldset").get(0).textNodes();
     String remarks = mark.size() == 0 ? "" : mark.get(0).text();
 
-      HashMap<String, String> map = new HashMap<>();
-      map.put("fid", fid);
-      map.put("cid", cid);
-      map.put("cname", CommonUtils.formatMD(cname));
-      map.put("create_time", createTime);
-      map.put("end_time", endTime);
-      map.put("rate", CommonUtils.torrentStatus(rate, rateUp, rateDown));
-      map.put("remarks", remarks);
-      Store.FREE_INFO.put(fid, map);
+    HashMap<String, String> map = new HashMap<>();
+    map.put("fid", fid);
+    map.put("cid", cid);
+    map.put("cname", CommonUtils.formatMD(cname));
+    map.put("create_time", createTime);
+    map.put("end_time", endTime);
+    map.put("rate", CommonUtils.torrentStatus(rate, rateUp, rateDown));
+    map.put("remarks", remarks);
+    Store.FREE_INFO.put(fid, map);
 
-      Store.context.getBean(Receiver.class).sendMsg(BotInitializer.id, "md", String.format("*全站 FREE 提醒*\n\n魔法: [\\#%s](%s/promotion.php?action=detail&id=%s)\n创建: [%s](%s/userdetails.php?id=%s)\n开始: `%s`\n结束: `%s`\n类型: `%s`\n备注: `%s`",
-              fid, BotInitializer.U2Domain, fid, CommonUtils.formatMD(cname), BotInitializer.U2Domain, cid, createTime, endTime, CommonUtils.torrentStatus(rate, rateUp, rateDown), remarks), null);
+    Store.context.getBean(Receiver.class).sendMsg(user.getUid(), "md", String.format("*全站 FREE 提醒*\n\n魔法: [\\#%s](%s/promotion.php?action=detail&id=%s)\n创建: [%s](%s/userdetails.php?id=%s)\n开始: `%s`\n结束: `%s`\n类型: `%s`\n备注: `%s`",
+      fid, u2.getDomain(), fid, CommonUtils.formatMD(cname), u2.getDomain(), cid, createTime, endTime, CommonUtils.torrentStatus(rate, rateUp, rateDown), remarks), null);
   }
 
 }

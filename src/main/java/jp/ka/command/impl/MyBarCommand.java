@@ -1,8 +1,8 @@
 package jp.ka.command.impl;
 
+import jp.ka.bean.config.U2;
 import jp.ka.command.Command;
-import jp.ka.config.BotInitializer;
-import jp.ka.variable.U2;
+import jp.ka.variable.U2Info;
 import jp.ka.controller.Receiver;
 import jp.ka.utils.HttpUtils;
 import lombok.SneakyThrows;
@@ -18,6 +18,9 @@ import java.util.Arrays;
 public class MyBarCommand implements Command {
 
   @Autowired
+  private U2 u2;
+
+  @Autowired
   private Receiver receiver;
 
   @SneakyThrows
@@ -25,11 +28,11 @@ public class MyBarCommand implements Command {
   public void execute(Message msg) {
     Long gid = msg.getChatId();
 
-    String uri = "/mybar.php?namered=229&namegreen=77&namex=5&nameblue=38&upx=90&upy=3&userid=" + U2.uid + ".png";
+    String uri = "/mybar.php?namered=229&namegreen=77&namex=5&nameblue=38&upx=90&upy=3&userid=" + U2Info.uid + ".png";
 
     InputStream img = HttpUtils.getPic(gid, uri);
     receiver.sendImg(gid, "", "", new InputFile(img, "mybar.png"), Arrays.asList(Arrays.asList(Arrays.asList(
-            Arrays.asList("点击查看原图", BotInitializer.U2Domain + uri)
+      Arrays.asList("点击查看原图", u2.getDomain() + uri)
     ))));
   }
 

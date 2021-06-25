@@ -1,9 +1,9 @@
 package jp.ka.controller;
 
-import jp.ka.config.BotInitializer;
-import jp.ka.config.BotProperties;
+import jp.ka.bean.config.Bot;
 import jp.ka.utils.CommonUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.DefaultBotOptions;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
@@ -25,28 +25,30 @@ import java.util.List;
 import java.util.Objects;
 
 @Slf4j
+@Component
 public class Receiver extends TelegramLongPollingBot {
 
-  private final CommandResolver  commandResolver;
+  private final CommandResolver commandResolver;
   private final CallbackResolver callbackResolver;
-  private final BotProperties    botProperties;
+  private final Bot bot;
+  private final jp.ka.bean.config.User user;
 
-  public Receiver(CommandResolver commandResolver, CallbackResolver callbackResolver,
-                  BotProperties botProperties, DefaultBotOptions botOptions) {
-    super(botOptions);
+  public Receiver(CommandResolver commandResolver, CallbackResolver callbackResolver, Bot bot, jp.ka.bean.config.User user, DefaultBotOptions options) {
+    super(options);
     this.commandResolver = commandResolver;
     this.callbackResolver = callbackResolver;
-    this.botProperties = botProperties;
+    this.bot = bot;
+    this.user = user;
   }
 
   @Override
   public String getBotUsername() {
-    return botProperties.getUsername();
+    return bot.getUsername();
   }
 
   @Override
   public String getBotToken() {
-    return botProperties.getToken();
+    return bot.getToken();
   }
 
   @Override
@@ -69,7 +71,7 @@ public class Receiver extends TelegramLongPollingBot {
       Long gid = msg.getChatId();
       Long uid = msg.getFrom().getId();
       if (!gid.equals(uid)) return;
-      if (Objects.nonNull(BotInitializer.id) && !uid.equals(BotInitializer.id)) {
+      if (Objects.nonNull(user.getUid()) && !uid.equals(user.getUid())) {
         sendMsg(gid, "md", "无权操作", null);
         return;
       }

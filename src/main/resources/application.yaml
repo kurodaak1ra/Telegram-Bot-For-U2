@@ -8,9 +8,6 @@ spring:
 mybatis:
   mapper-locations: mapper/*Mapper.xml
 
-user:
-  id:
-
 bot:
   token: ${BOT_TOKEN:}
   username: ${BOT_NAME:}
@@ -19,12 +16,14 @@ bot:
     port: ${PROXY_PORT:1080}
     type: ${PROXY_TYPE:NO_PROXY} #SOCKS4 | SOCKS5 | HTTP
 
+user:
+  id:
+
 u2:
-  domain: https://u2.dmhy.org
   cookie:
 
 phantomjs:
-
+  path:
 
 #logging:
 #  level:

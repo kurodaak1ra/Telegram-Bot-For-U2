@@ -4,7 +4,7 @@ import jp.ka.bean.RespGet;
 import jp.ka.bean.RespPost;
 import jp.ka.command.Command;
 import jp.ka.variable.MsgTpl;
-import jp.ka.variable.U2;
+import jp.ka.variable.U2Info;
 import jp.ka.controller.Receiver;
 import jp.ka.exception.HttpException;
 import jp.ka.utils.CommonUtils;
@@ -125,8 +125,8 @@ public class MagicController implements Command {
       return null;
     }
 
-    params.add(new BasicNameValuePair("user", uid.equals("ALL") ? uid : (uid.equals(U2.uid) ? "SELF" : "OTHER")));
-    params.add(new BasicNameValuePair("user_other", !uid.equals("ALL") && !uid.equals(U2.uid) ? uid : ""));
+    params.add(new BasicNameValuePair("user", uid.equals("ALL") ? uid : (uid.equals(U2Info.uid) ? "SELF" : "OTHER")));
+    params.add(new BasicNameValuePair("user_other", !uid.equals("ALL") && !uid.equals(U2Info.uid) ? uid : ""));
     params.add(new BasicNameValuePair("start", "0"));
     params.add(new BasicNameValuePair("hours", hours));
     params.add(new BasicNameValuePair("promotion", promote));

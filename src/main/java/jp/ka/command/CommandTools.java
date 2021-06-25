@@ -1,9 +1,9 @@
 package jp.ka.command;
 
 import jp.ka.bean.RespGet;
-import jp.ka.bean.U2Info;
-import jp.ka.config.BotInitializer;
-import jp.ka.variable.U2;
+import jp.ka.bean.UserInfo;
+import jp.ka.utils.PhantomjsUtils;
+import jp.ka.variable.U2Info;
 import jp.ka.controller.Receiver;
 import jp.ka.mapper.U2Mapper;
 import jp.ka.utils.CommonUtils;
@@ -60,24 +60,24 @@ public class CommandTools {
     String coinCopper = uCoin.getElementsByClass("ucoin-copper").text();
     // ========================================================
     String tmpMsg = String.format("*\\[个人信息\\]*\n\nUID: `%s`\n用户名: `%s`\n分享率: `%s`\n上传量: `%s`\n下载量: `%s`\nUCoin: `%s%s%s`\n邀请: `%s`\n客户端: `%s`\n上传: `%s`\n下载: `%s`",
-        U2.uid, CommonUtils.formatMD(username), shareRate, uploads, downloads, coinGold.equals("") ? "" : "\uD83E\uDD47" + coinGold, coinSilver.equals("") ? "" : "\uD83E\uDD48" + coinSilver, coinCopper.equals("") ? "" : "\uD83E\uDD49" + coinCopper, invite, client, uploading, downloading);
+      U2Info.uid, CommonUtils.formatMD(username), shareRate, uploads, downloads, coinGold.equals("") ? "" : "\uD83E\uDD47" + coinGold, coinSilver.equals("") ? "" : "\uD83E\uDD48" + coinSilver, coinCopper.equals("") ? "" : "\uD83E\uDD49" + coinCopper, invite, client, uploading, downloading);
     receiver.sendMsg(gid, "md", tmpMsg, null);
   }
 
-  public static void setData(Long id) {
-    RespGet resp1 = HttpUtils.get(BotInitializer.id, "/usercp.php");
-    U2.passKey = resp1.getHtml().getElementsByClass("hidden-click").get(0).attr("data-content");
+  public static void setData(Long gid) {
+    RespGet resp1 = HttpUtils.get(gid, "/usercp.php");
+    U2Info.passKey = resp1.getHtml().getElementsByClass("hidden-click").get(0).attr("data-content");
 
-    RespGet  resp2 = HttpUtils.get(BotInitializer.id, "/index.php");
-    Elements c     = resp2.getHtml().getElementsByClass("medium").get(0).children();
-    U2.uid = c.get(0).child(0).attr("href").split("id=")[1];
-    U2.pageKey = c.get(1).attr("href").split("key=")[1];
+    RespGet resp2 = HttpUtils.get(gid, "/index.php");
+    Elements c = resp2.getHtml().getElementsByClass("medium").get(0).children();
+    U2Info.uid = c.get(0).child(0).attr("href").split("id=")[1];
+    U2Info.pageKey = c.get(1).attr("href").split("key=")[1];
 
-    mapper.insertInfo(new U2Info(id, Integer.valueOf(U2.uid), U2.pageKey, U2.passKey));
+    mapper.insertInfo(new UserInfo(gid, Integer.valueOf(U2Info.uid), U2Info.pageKey, U2Info.passKey));
   }
 
-  public static void loginSucc() {
-    Long gid = BotInitializer.id;
+  public static void loginSucc(Long gid) {
+    PhantomjsUtils.init();
     CommandTools.setData(gid);
     CommandTools.userInfo(gid);
     CommonUtils.pushServiceStart();

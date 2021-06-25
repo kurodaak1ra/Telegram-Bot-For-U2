@@ -1,9 +1,9 @@
 package jp.ka.callback.impl;
 
 import jp.ka.bean.RespGet;
+import jp.ka.bean.config.U2;
 import jp.ka.callback.Callback;
 import jp.ka.command.impl.SearchCommand;
-import jp.ka.config.BotInitializer;
 import jp.ka.variable.MsgTpl;
 import jp.ka.controller.Receiver;
 import jp.ka.utils.CommonUtils;
@@ -23,6 +23,9 @@ import java.util.*;
 
 @Component
 public class SearchCallback implements Callback {
+
+  @Autowired
+  private U2 u2;
 
   @Autowired
   private RedisUtils redis;
@@ -86,16 +89,11 @@ public class SearchCallback implements Callback {
     Elements trs = resp.getHtml().getElementById("outer").getElementsByTag("table").get(0).getElementsByTag("tr");
 
     StringBuilder sb = new StringBuilder();
-      sb.append(String.format("[%s](%s/details.php?id=%s&hit=1)\n", CommonUtils.formatMD(item.get("name")), BotInitializer.U2Domain, item.get("tid")));
+    sb.append(String.format("[%s](%s/details.php?id=%s&hit=1)\n", CommonUtils.formatMD(item.get("name")), u2.getDomain(), item.get("tid")));
     for (int i = 0; i < trs.size(); i++) {
       Element tr = trs.get(i);
       String title = trs.get(i).getElementsByTag("td").get(0).text();
       switch (title) {
-        // case "下载": {
-        //   Element download = tr.getElementsByTag("a").get(1);
-        //   U2.passKey = download.attr("href").split("&")[1].split("=")[1];
-        //   break;
-        // }
         case "副标题": {
           Element td = tr.getElementsByTag("td").get(1);
           sb.append("_" + CommonUtils.formatMD(td.text()) + "_\n");

@@ -1,21 +1,29 @@
 package jp.ka.controller;
 
+import jp.ka.bean.config.User;
 import jp.ka.command.Command;
-import jp.ka.config.BotInitializer;
 import jp.ka.variable.MsgTpl;
 import jp.ka.variable.Store;
 import org.springframework.context.ApplicationContext;
+import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.util.*;
 
+@Component
 public class CommandResolver {
+
+  private final User user;
 
   private final Map<String, Command> commandMap = new HashMap<>();
 
   public void initCommandMap(ApplicationContext context) {
     context.getBeansOfType(Command.class).values().forEach(this::putCommands);
+  }
+
+  public CommandResolver(User user) {
+    this.user = user;
   }
 
   private void putCommands(Command command) {
@@ -34,7 +42,7 @@ public class CommandResolver {
       Command command = commandMap.get(commandText.substring(1));
       if (Objects.isNull(command)) return;
 
-      if ((Objects.nonNull(BotInitializer.id) && (!command.getClass().getSimpleName().equals("CaptchaCommand") && !command.getClass().getSimpleName().equals("LoginCommand"))) || (Objects.isNull(BotInitializer.id) && !command.needLogin())) {
+      if ((Objects.nonNull(user.getUid()) && (!command.getClass().getSimpleName().equals("CaptchaCommand") && !command.getClass().getSimpleName().equals("LoginCommand"))) || (Objects.isNull(user.getUid()) && !command.needLogin())) {
         String firstLine = msg.getText().toUpperCase().split("\n")[0].trim();
         if (firstLine.contains(" ")) {
           Message prompt = command.prompt(msg.getChatId());
@@ -52,7 +60,7 @@ public class CommandResolver {
       }
 
       String errMsg = "*请登陆*";
-      if (Objects.nonNull(BotInitializer.id)) errMsg = "*您已登陆*";
+      if (Objects.nonNull(user.getUid())) errMsg = "*您已登陆*";
       Store.context.getBean(Receiver.class).sendMsg(msg.getChatId(), "md", errMsg, null);
     }
   }

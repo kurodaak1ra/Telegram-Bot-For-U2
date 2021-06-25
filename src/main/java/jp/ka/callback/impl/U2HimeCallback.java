@@ -1,9 +1,9 @@
 package jp.ka.callback.impl;
 
 import jp.ka.bean.RespPost;
+import jp.ka.bean.config.U2;
 import jp.ka.callback.Callback;
-import jp.ka.config.BotInitializer;
-import jp.ka.variable.U2;
+import jp.ka.variable.U2Info;
 import jp.ka.controller.Receiver;
 import jp.ka.utils.CommonUtils;
 import jp.ka.utils.HttpUtils;
@@ -26,6 +26,9 @@ import java.util.Map;
 public class U2HimeCallback implements Callback {
 
   @Autowired
+  private U2 u2;
+
+  @Autowired
   private Receiver receiver;
 
   @SneakyThrows
@@ -39,7 +42,7 @@ public class U2HimeCallback implements Callback {
     params.add(new BasicNameValuePair("shout", "这不是搜索！"));
 
     receiver.sendDel(gid, mid);
-    RespPost resp = HttpUtils.postForm(gid, "/shoutbox.php?action=send&key=" + U2.pageKey, params);
+    RespPost resp = HttpUtils.postForm(gid, "/shoutbox.php?action=send&key=" + U2Info.pageKey, params);
     if (resp.getCode() == 200) {
       Element shoutrow = resp.getHtml().getElementsByClass("shoutrow").get(0);
       Elements reply = shoutrow.getElementsByTag("div").get(0).getElementsByTag("bdo").get(0).getAllElements();
@@ -48,8 +51,8 @@ public class U2HimeCallback implements Callback {
       if (reply.size() == 2) {
         String imgSrc = reply.get(1).attr("src");
         if (!imgSrc.equals("")) {
-            String      uri = imgSrc.replaceAll(BotInitializer.U2Domain, "");
-            InputStream pic = HttpUtils.getPic(gid, uri.charAt(0) == '/' ? uri : "/" + uri);
+          String uri = imgSrc.replaceAll(u2.getDomain(), "");
+          InputStream pic = HttpUtils.getPic(gid, uri.charAt(0) == '/' ? uri : "/" + uri);
           if (!replyMsg.equals("")) replyMsg = "*U2娘* " + CommonUtils.formatMD(replyMsg);
           receiver.sendImg(gid, "md", replyMsg, new InputFile().setMedia(pic, "img.png"), null);
           return;

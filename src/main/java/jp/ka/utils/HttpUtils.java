@@ -4,7 +4,8 @@ import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import jp.ka.bean.RespGet;
 import jp.ka.bean.RespPost;
-import jp.ka.config.BotInitializer;
+import jp.ka.bean.config.U2;
+import jp.ka.bean.config.User;
 import jp.ka.controller.Receiver;
 import jp.ka.exception.HttpException;
 import jp.ka.variable.MsgTpl;
@@ -34,6 +35,7 @@ import org.apache.http.util.EntityUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.net.ssl.SSLContext;
@@ -57,13 +59,25 @@ import java.util.regex.Pattern;
 @Component
 public class HttpUtils {
 
+  private static U2 u2;
+  private static User user;
+
+  @Autowired
+  public void setU2(U2 u2) {
+    this.u2 = u2;
+  }
+  @Autowired
+  public void setUser(User user) {
+    this.user = user;
+  }
+
   public static Map<String, String> session = new HashMap<>();
 
   public static final String UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:89.0) Gecko/20100101 Firefox/89.0";
 
-  private static       PoolingHttpClientConnectionManager connMgr;
-  private static final int                                MAX_TIMEOUT = 7000;
-  private static       RequestConfig                      requestConfig;
+  private static PoolingHttpClientConnectionManager connMgr;
+  private static final int MAX_TIMEOUT = 7000;
+  private static RequestConfig requestConfig;
 
   static {
     // 设置连接池
@@ -116,8 +130,8 @@ public class HttpUtils {
   }
 
   private static Response req(Long gid, HttpRequestBase request) throws HttpException {
-    CloseableHttpClient cli     = HttpClients.custom().setSSLSocketFactory(createSSLConnSocketFactory(gid)).setConnectionManager(connMgr).setDefaultRequestConfig(requestConfig).build();
-    HttpClientContext   context = HttpClientContext.create();
+    CloseableHttpClient cli = HttpClients.custom().setSSLSocketFactory(createSSLConnSocketFactory(gid)).setConnectionManager(connMgr).setDefaultRequestConfig(requestConfig).build();
+    HttpClientContext context = HttpClientContext.create();
 
     try {
       HttpResponse response = cli.execute(request, context);
@@ -126,7 +140,7 @@ public class HttpUtils {
       }
 
       byte[] result = EntityUtils.toByteArray(response.getEntity());
-      int    code   = response.getStatusLine().getStatusCode();
+      int code = response.getStatusLine().getStatusCode();
       if (!Pattern.compile("messages\\.php|/promotion\\.php").matcher(request.getURI().toString()).find()) {
         log.info("[Session] {}", session);
         log.info("[{} Response <{}> <{}>]\n\n{}\n", request.getMethod(), code, request.getURI(), response);
@@ -154,7 +168,7 @@ public class HttpUtils {
   }
 
   public static RespGet get(Long gid, String uri) throws HttpException {
-    HttpGet get = new HttpGet(BotInitializer.U2Domain + uri);
+    HttpGet get = new HttpGet(u2.getDomain() + uri);
     get.addHeader("accept", "*/*");
     get.addHeader("user-agent", UA);
     if (!session.isEmpty()) get.addHeader("cookie", cookieToString());
@@ -168,7 +182,7 @@ public class HttpUtils {
     return new RespGet(resp.getCode(), resp.getResult(), null);
   }
   public static InputStream getPic(Long gid, String uri) throws HttpException {
-    HttpGet get = new HttpGet(BotInitializer.U2Domain + uri);
+    HttpGet get = new HttpGet(u2.getDomain() + uri);
     get.addHeader("accept", "*/*");
     get.addHeader("user-agent", UA);
     if (!session.isEmpty()) get.addHeader("cookie", cookieToString());
@@ -177,7 +191,7 @@ public class HttpUtils {
   }
 
   private static RespPost post(Long gid, String uri, String mediaType, HttpEntity entity) throws HttpException {
-    HttpPost post = new HttpPost(BotInitializer.U2Domain + uri);
+    HttpPost post = new HttpPost(u2.getDomain() + uri);
     post.addHeader("content-type", mediaType);
     post.addHeader("accept", "*/*");
     post.addHeader("user-agent", UA);
@@ -222,7 +236,7 @@ public class HttpUtils {
     if (title.get(0).text().equals("Access Point :: U2")) {
       Store.context.getBean(Receiver.class).sendMsg(gid, "md", MsgTpl.LOGIN_EXPIRE, null);
       Store.STEP = null;
-      BotInitializer.id = null;
+      user.setUid(null);
       session.clear();
       throw new HttpException(403, "not login");
     }

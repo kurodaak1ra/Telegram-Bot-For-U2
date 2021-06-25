@@ -1,8 +1,8 @@
 package jp.ka.callback.impl;
 
+import jp.ka.bean.config.User;
 import jp.ka.callback.Callback;
 import jp.ka.command.impl.CaptchaCommand;
-import jp.ka.config.BotInitializer;
 import jp.ka.controller.Receiver;
 import jp.ka.variable.Store;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +16,9 @@ import java.util.Objects;
 public class CaptchaCallback implements Callback {
 
   @Autowired
+  private User user;
+
+  @Autowired
   private Receiver receiver;
 
   @Override
@@ -26,7 +29,7 @@ public class CaptchaCallback implements Callback {
     switch (cbData) {
       case "refresh": {
         receiver.sendDel(gid, mid);
-        if (Objects.nonNull(BotInitializer.id)) return;
+        if (Objects.nonNull(user.getUid())) return;
         Store.context.getBean(CaptchaCommand.class).sendCaptcha(gid);
       }
     }
