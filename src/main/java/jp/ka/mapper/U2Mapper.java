@@ -1,20 +1,18 @@
 package jp.ka.mapper;
 
-import jp.ka.bean.U2Cookie;
-import jp.ka.bean.U2Info;
+import jp.ka.bean.UserCookie;
+import jp.ka.bean.UserInfo;
 import org.apache.ibatis.annotations.*;
 
 @Mapper
 public interface U2Mapper {
 
-  void insertInfo(U2Info info);
+  void insertInfo(UserInfo info);
 
-  // void updateInfo(U2Info info);
+  UserInfo queryInfo();
 
-  U2Info queryInfo();
+  void insertCookies(UserCookie cookie);
 
-  void insertCookies(U2Cookie cookie);
-
-  U2Cookie[] queryCookies();
+  UserCookie[] queryCookies();
 
 }

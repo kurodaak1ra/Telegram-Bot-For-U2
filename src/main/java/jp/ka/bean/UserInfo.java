@@ -7,9 +7,12 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class U2Cookie {
+public class UserInfo {
 
-  private String k;
-  private String v;
+  private Long id;
+
+  private Integer uid;
+  private String pageKey;
+  private String passKey;
 
 }
