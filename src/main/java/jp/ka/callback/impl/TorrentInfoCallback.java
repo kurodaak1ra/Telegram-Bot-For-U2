@@ -1,7 +1,7 @@
 package jp.ka.callback.impl;
 
 import jp.ka.callback.Callback;
-import jp.ka.config.Config;
+import jp.ka.config.BotInitializer;
 import jp.ka.variable.U2;
 import jp.ka.controller.Receiver;
 import jp.ka.utils.CommonUtils;
@@ -10,7 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Map;
 
 @Component
 public class TorrentInfoCallback implements Callback {
@@ -52,10 +53,10 @@ public class TorrentInfoCallback implements Callback {
 
   private void link(Long gid, Integer mid, String tid) {
     receiver.sendEditMsg(gid, mid, "md",
-      "*链接包含私密的 passkey 请谨慎使用*\n\n" + CommonUtils.formatMD(String.format("%s/download.php?id=%s&passkey=%s&https=1", Config.U2Domain, tid, U2.passKey)),
-      Arrays.asList(Arrays.asList(Arrays.asList(
-        Arrays.asList("❌", CBK.TORRENT_LINK + ":close")
-      )))
+            "*链接包含私密的 passkey 请谨慎使用*\n\n" + CommonUtils.formatMD(String.format("%s/download.php?id=%s&passkey=%s&https=1", BotInitializer.U2Domain, tid, U2.passKey)),
+            Arrays.asList(Arrays.asList(Arrays.asList(
+                    Arrays.asList("❌", CBK.TORRENT_LINK + ":close")
+            )))
     );
   }
 

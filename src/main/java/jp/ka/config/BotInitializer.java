@@ -17,24 +17,24 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.stereotype.Component;
 
 import java.util.Objects;
 
 @Slf4j
-@Component
-public class Config implements CommandLineRunner, ApplicationListener<ContextRefreshedEvent> {
+public class BotInitializer implements CommandLineRunner, ApplicationListener<ContextRefreshedEvent> {
 
   @Autowired
-  private U2Mapper mapper;
+  private U2Mapper        mapper;
 
   public static Long id;
+
   @Value("${user.id}")
   public void setUID(Long id) {
     this.id = id;
   }
 
   public static String U2Domain;
+
   @Value("${u2.domain}")
   public void setDomain(String domain) {
     this.U2Domain = domain;
@@ -54,7 +54,7 @@ public class Config implements CommandLineRunner, ApplicationListener<ContextRef
 
   @Override // 初始化数据
   public void run(String... args) throws Exception {
-    U2Info info = mapper.queryInfo();
+    U2Info     info    = mapper.queryInfo();
     U2Cookie[] cookies = mapper.queryCookies();
     if (Objects.nonNull(info) && Objects.nonNull(cookies)) {
       id = info.getId();

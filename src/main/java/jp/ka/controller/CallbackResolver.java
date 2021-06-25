@@ -4,9 +4,7 @@ import jp.ka.callback.Callback;
 import jp.ka.variable.MsgTpl;
 import jp.ka.utils.RedisUtils;
 import jp.ka.variable.Store;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
@@ -15,13 +13,15 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
-@Component
 public class CallbackResolver {
 
-  @Autowired
-  private RedisUtils redis;
+  private final RedisUtils redis;
 
   private final Map<String, Callback> callbackMap = new HashMap<>();
+
+  public CallbackResolver(RedisUtils redis) {
+    this.redis = redis;
+  }
 
   public void initCallbackMap(ApplicationContext context) {
     context.getBeansOfType(Callback.class).values().forEach(this::putCallback);

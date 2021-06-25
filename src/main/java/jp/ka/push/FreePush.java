@@ -1,14 +1,14 @@
 package jp.ka.push;
 
 import jp.ka.bean.RespGet;
-import jp.ka.config.Config;
-import jp.ka.variable.MsgTpl;
-import jp.ka.variable.U2;
+import jp.ka.config.BotInitializer;
 import jp.ka.controller.Receiver;
 import jp.ka.exception.HttpException;
 import jp.ka.utils.CommonUtils;
 import jp.ka.utils.HttpUtils;
+import jp.ka.variable.MsgTpl;
 import jp.ka.variable.Store;
+import jp.ka.variable.U2;
 import lombok.SneakyThrows;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.TextNode;
@@ -30,7 +30,7 @@ public class FreePush {
   }
 
   public static void start() {
-    if (Objects.isNull(Config.id) || Objects.nonNull(timerTask)) return;
+      if (Objects.isNull(BotInitializer.id) || Objects.nonNull(timerTask)) return;
     Store.FREE_PUSH = true;
     timerTask = new TimerTask() {
       @Override
@@ -52,7 +52,7 @@ public class FreePush {
   private static void free() {
     RespGet resp = null;
     try {
-      resp = HttpUtils.get(Config.id, "/promotion.php?action=list");
+      resp = HttpUtils.get(BotInitializer.id, "/promotion.php?action=list");
       Elements tables = resp.getHtml().getElementById("outer").getElementsByTag("table");
       Element content = tables.get(tables.size() - 1);
 
@@ -67,12 +67,12 @@ public class FreePush {
 
         if (Store.FREE_INFO.containsKey(fid)) {
           Map<String, String> val = Store.FREE_INFO.get(fid);
-          long difference = SDF.parse(val.get("end_time") + " +0800").getTime() - new Date().getTime();
-          if (difference <= 0) {
+        long difference = SDF.parse(val.get("end_time") + " +0800").getTime() - new Date().getTime();
+        if (difference <= 0) {
             Store.FREE_INFO.remove(fid);
-            Store.context.getBean(Receiver.class).sendMsg(Config.id, "md",  String.format("*全站 FREE 到期提醒*\n\n魔法: [\\#%s](%s/promotion.php?action=detail&id=%s)\n创建: [%s](%s/userdetails.php?id=%s)\n开始: `%s`\n结束: `%s`\n类型: `%s`\n备注: `%s`",
-              fid, Config.U2Domain, fid, val.get("cname"), Config.U2Domain, val.get("cid"), val.get("create_time"), val.get("end_time"), val.get("rate"), val.get("remarks")), null);
-          }
+            Store.context.getBean(Receiver.class).sendMsg(BotInitializer.id, "md", String.format("*全站 FREE 到期提醒*\n\n魔法: [\\#%s](%s/promotion.php?action=detail&id=%s)\n创建: [%s](%s/userdetails.php?id=%s)\n开始: `%s`\n结束: `%s`\n类型: `%s`\n备注: `%s`",
+                    fid, BotInitializer.U2Domain, fid, val.get("cname"), BotInitializer.U2Domain, val.get("cid"), val.get("create_time"), val.get("end_time"), val.get("rate"), val.get("remarks")), null);
+            }
           continue;
         }
 
@@ -86,7 +86,7 @@ public class FreePush {
         if (Store.FREE_PUSH_REQ_FAILED_TIMES >= 10) {
           stop();
           Store.FREE_PUSH_REQ_FAILED_TIMES = 0;
-          Store.context.getBean(Receiver.class).sendMsg( Config.id, "md", String.format(MsgTpl.PUSH_FAILED_MULTIPLE_TIMES, "FREE"), null);
+          Store.context.getBean(Receiver.class).sendMsg(BotInitializer.id, "md", String.format(MsgTpl.PUSH_FAILED_MULTIPLE_TIMES, "FREE"), null);
         } else Store.FREE_PUSH_REQ_FAILED_TIMES++;
       }
     }
@@ -94,9 +94,9 @@ public class FreePush {
 
   @SneakyThrows
   private static void freeNotice(String fid) {
-    RespGet resp = HttpUtils.get(Config.id, "/promotion.php?action=detail&id=" + fid);
-    Elements tables = resp.getHtml().getElementById("outer").getElementsByTag("table");
-    Element content = tables.get(tables.size() - 1);
+      RespGet  resp    = HttpUtils.get(BotInitializer.id, "/promotion.php?action=detail&id=" + fid);
+      Elements tables  = resp.getHtml().getElementById("outer").getElementsByTag("table");
+    Element    content = tables.get(tables.size() - 1);
 
     Elements rows = content.child(0).children();
     Element creator = rows.get(3).child(1).getElementsByTag("a").get(0);
@@ -118,18 +118,18 @@ public class FreePush {
     List<TextNode> mark = rows.get(7).child(1).getElementsByTag("fieldset").get(0).textNodes();
     String remarks = mark.size() == 0 ? "" : mark.get(0).text();
 
-    HashMap<String, String> map = new HashMap<>();
-    map.put("fid", fid);
-    map.put("cid", cid);
-    map.put("cname", CommonUtils.formatMD(cname));
-    map.put("create_time", createTime);
-    map.put("end_time", endTime);
-    map.put("rate", CommonUtils.torrentStatus(rate, rateUp, rateDown));
-    map.put("remarks", remarks);
-    Store.FREE_INFO.put(fid, map);
+      HashMap<String, String> map = new HashMap<>();
+      map.put("fid", fid);
+      map.put("cid", cid);
+      map.put("cname", CommonUtils.formatMD(cname));
+      map.put("create_time", createTime);
+      map.put("end_time", endTime);
+      map.put("rate", CommonUtils.torrentStatus(rate, rateUp, rateDown));
+      map.put("remarks", remarks);
+      Store.FREE_INFO.put(fid, map);
 
-    Store.context.getBean(Receiver.class).sendMsg(Config.id, "md", String.format("*全站 FREE 提醒*\n\n魔法: [\\#%s](%s/promotion.php?action=detail&id=%s)\n创建: [%s](%s/userdetails.php?id=%s)\n开始: `%s`\n结束: `%s`\n类型: `%s`\n备注: `%s`",
-      fid, Config.U2Domain, fid, CommonUtils.formatMD(cname), Config.U2Domain, cid, createTime, endTime, CommonUtils.torrentStatus(rate, rateUp, rateDown), remarks), null);
+      Store.context.getBean(Receiver.class).sendMsg(BotInitializer.id, "md", String.format("*全站 FREE 提醒*\n\n魔法: [\\#%s](%s/promotion.php?action=detail&id=%s)\n创建: [%s](%s/userdetails.php?id=%s)\n开始: `%s`\n结束: `%s`\n类型: `%s`\n备注: `%s`",
+              fid, BotInitializer.U2Domain, fid, CommonUtils.formatMD(cname), BotInitializer.U2Domain, cid, createTime, endTime, CommonUtils.torrentStatus(rate, rateUp, rateDown), remarks), null);
   }
 
 }

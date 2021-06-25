@@ -3,7 +3,7 @@ package jp.ka.callback.impl;
 import jp.ka.bean.RespGet;
 import jp.ka.callback.Callback;
 import jp.ka.command.impl.SearchCommand;
-import jp.ka.config.Config;
+import jp.ka.config.BotInitializer;
 import jp.ka.variable.MsgTpl;
 import jp.ka.controller.Receiver;
 import jp.ka.utils.CommonUtils;
@@ -86,7 +86,7 @@ public class SearchCallback implements Callback {
     Elements trs = resp.getHtml().getElementById("outer").getElementsByTag("table").get(0).getElementsByTag("tr");
 
     StringBuilder sb = new StringBuilder();
-    sb.append(String.format("[%s](%s/details.php?id=%s&hit=1)\n", CommonUtils.formatMD(item.get("name")), Config.U2Domain, item.get("tid")));
+      sb.append(String.format("[%s](%s/details.php?id=%s&hit=1)\n", CommonUtils.formatMD(item.get("name")), BotInitializer.U2Domain, item.get("tid")));
     for (int i = 0; i < trs.size(); i++) {
       Element tr = trs.get(i);
       String title = trs.get(i).getElementsByTag("td").get(0).text();

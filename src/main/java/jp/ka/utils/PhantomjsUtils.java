@@ -1,6 +1,6 @@
 package jp.ka.utils;
 
-import jp.ka.config.Config;
+import jp.ka.config.BotInitializer;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.openqa.selenium.*;
@@ -29,8 +29,8 @@ public class PhantomjsUtils {
     dc.setCapability("takesScreenshot",true);
     dc.setCapability("cssSelectorsEnabled", true);
     dc.setCapability(PhantomJSDriverService.PHANTOMJS_PAGE_SETTINGS_PREFIX + "userAgent", HttpUtils.UA);
-    dc.setCapability(PhantomJSDriverService.PHANTOMJS_PAGE_CUSTOMHEADERS_PREFIX + "User-Agent", HttpUtils.UA);
-    dc.setCapability(PhantomJSDriverService.PHANTOMJS_EXECUTABLE_PATH_PROPERTY, Config.phantomjs);
+      dc.setCapability(PhantomJSDriverService.PHANTOMJS_PAGE_CUSTOMHEADERS_PREFIX + "User-Agent", HttpUtils.UA);
+      dc.setCapability(PhantomJSDriverService.PHANTOMJS_EXECUTABLE_PATH_PROPERTY, BotInitializer.phantomjs);
 
     PhantomJSDriver phantomJSDriver = new PhantomJSDriver(dc);
     phantomJSDriver.manage().window().maximize(); // 窗口最大化
@@ -49,18 +49,18 @@ public class PhantomjsUtils {
       if (ck.getName().equals(U2_COOKIE_KEY)) login = true;
     }
     if (!login) {
-      driver.get(Config.U2Domain + "/portal.php");
+        driver.get(BotInitializer.U2Domain + "/portal.php");
 
       Calendar c = Calendar.getInstance();
       c.setTime(new Date());
       c.add(Calendar.YEAR, 1);
       HashSet<Cookie> set = new HashSet<>();
       set.add(new Cookie(
-          U2_COOKIE_KEY,
-          HttpUtils.session.get(U2_COOKIE_KEY),
-          Config.U2Domain.split("//")[1],
-          "/",
-          c.getTime()
+              U2_COOKIE_KEY,
+              HttpUtils.session.get(U2_COOKIE_KEY),
+              BotInitializer.U2Domain.split("//")[1],
+              "/",
+              c.getTime()
       ));
       setCookies(driver, set);
     }
