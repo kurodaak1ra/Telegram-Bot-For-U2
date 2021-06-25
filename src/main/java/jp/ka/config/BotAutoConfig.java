@@ -38,7 +38,7 @@ public class BotAutoConfig {
     @Bean
     public DefaultBotOptions defaultBotOptions(ProxyProperties proxyProperties, BotProperties botProperties) {
         DefaultBotOptions options = new DefaultBotOptions();
-        if (!proxyProperties.getType().equals(ProxyType.NO_PROXY)) {
+        if (!proxyProperties.getType().equals(ProxyType.NO_PROXY) && StringUtils.isNotBlank(proxyProperties.getHost())) {
             options.setProxyHost(proxyProperties.getHost());
             options.setProxyPort(proxyProperties.getPort());
             options.setProxyType(proxyProperties.getType());
