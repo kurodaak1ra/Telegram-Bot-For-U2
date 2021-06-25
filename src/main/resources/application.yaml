@@ -16,11 +16,11 @@ bot:
     port: ${PROXY_PORT:1080}
     type: ${PROXY_TYPE:NO_PROXY} #SOCKS4 | SOCKS5 | HTTP
 
-user:
-  id:
-
 u2:
   cookie:
+
+user:
+  id:
 
 phantomjs:
   path:

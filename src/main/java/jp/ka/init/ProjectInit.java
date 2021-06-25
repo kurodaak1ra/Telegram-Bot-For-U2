@@ -40,22 +40,22 @@ public class ProjectInit implements CommandLineRunner, ApplicationListener<Conte
     UserInfo info = mapper.queryInfo();
     UserCookie[] cookies = mapper.queryCookies();
     if (Objects.nonNull(info) && Objects.nonNull(cookies)) {
-      user.setUid(info.getId());
-      U2Info.uid = user.getUid().toString();
+      user.setId(info.getId());
+      U2Info.uid = info.getUid().toString();
       U2Info.pageKey = info.getPageKey();
       U2Info.passKey = info.getPassKey();
       for (UserCookie cookie : cookies) {
         HttpUtils.session.put(cookie.getK(), cookie.getV());
       }
       PhantomjsUtils.init();
-      CommandTools.userInfo(user.getUid());
+      CommandTools.userInfo(user.getId());
       CommonUtils.pushServiceStart();
       log.info("[Login Data From SQL]");
       return;
     }
 
     if (!u2.getCookie().equals("")) {
-      if (Objects.isNull(user.getUid())) {
+      if (Objects.isNull(user.getId())) {
         log.info("手动设置了 Cookie 必须再手动设置 Telegram Number UID");
         System.exit(0);
       }
@@ -66,7 +66,7 @@ public class ProjectInit implements CommandLineRunner, ApplicationListener<Conte
           mapper.insertCookies(new UserCookie(split[0], split[1]));
         }
       }
-      CommandTools.loginSucc(user.getUid());
+      CommandTools.loginSucc(user.getId());
       log.info("[Inject Cookie] {}", HttpUtils.session);
     }
   }

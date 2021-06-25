@@ -82,7 +82,7 @@ public class LoginCommand implements Command {
         return;
       }
       Store.STEP = null;
-      user.setUid(gid);
+      user.setId(gid);
       receiver.sendMsg(gid, "md", "*登陆成功*", null);
       CommandTools.loginSucc(gid);
       for (Map.Entry<String, String> entry : HttpUtils.session.entrySet()) {

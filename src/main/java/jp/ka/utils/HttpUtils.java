@@ -236,7 +236,7 @@ public class HttpUtils {
     if (title.get(0).text().equals("Access Point :: U2")) {
       Store.context.getBean(Receiver.class).sendMsg(gid, "md", MsgTpl.LOGIN_EXPIRE, null);
       Store.STEP = null;
-      user.setUid(null);
+      user.setId(null);
       session.clear();
       throw new HttpException(403, "not login");
     }

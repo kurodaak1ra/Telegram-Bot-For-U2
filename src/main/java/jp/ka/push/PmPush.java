@@ -48,7 +48,7 @@ public class PmPush {
   private static TimerTask timerTask = null;
 
   public static void start() {
-    if (Objects.isNull(user.getUid()) || Objects.nonNull(timerTask) || phantomjs.getPath().equals("")) return;
+    if (Objects.isNull(  user.getId()) || Objects.nonNull(timerTask) || phantomjs.getPath().equals("")) return;
     Store.PM_PUSH = true;
     timerTask = new TimerTask() {
       @Override
@@ -70,7 +70,7 @@ public class PmPush {
   private static void pm() {
     RespGet resp = null;
     try {
-      resp = HttpUtils.get(user.getUid(), "/messages.php");
+      resp = HttpUtils.get(  user.getId(), "/messages.php");
       Elements tables = resp.getHtml().getElementById("outer").getElementsByTag("table");
       Element content = tables.get(tables.size() - 1);
 
@@ -98,7 +98,7 @@ public class PmPush {
         if (Store.PM_PUSH_REQ_FAILED_TIMES >= 10) {
           stop();
           Store.PM_PUSH_REQ_FAILED_TIMES = 0;
-          Store.context.getBean(Receiver.class).sendMsg(user.getUid(), "md", String.format(MsgTpl.PUSH_FAILED_MULTIPLE_TIMES, "PM"), null);
+          Store.context.getBean(Receiver.class).sendMsg(  user.getId(), "md", String.format(MsgTpl.PUSH_FAILED_MULTIPLE_TIMES, "PM"), null);
         } else Store.PM_PUSH_REQ_FAILED_TIMES++;
       }
     }
@@ -111,7 +111,7 @@ public class PmPush {
 
     List<File> screens = PhantomjsUtils.captureEl(u2.getDomain() + "/messages.php?action=viewmessage&id=" + mid, "#outer table:last-child");
     for (File screen : screens) {
-      Store.context.getBean(Receiver.class).sendImg(user.getUid(), "md", String.format("*PM消息提醒*\n\n主题: [%s](%s/messages.php?action=viewmessage&id=%s)\n来自: %s\n时间: `%s`",
+      Store.context.getBean(Receiver.class).sendImg(  user.getId(), "md", String.format("*PM消息提醒*\n\n主题: [%s](%s/messages.php?action=viewmessage&id=%s)\n来自: %s\n时间: `%s`",
         CommonUtils.formatMD(theme), u2.getDomain(), mid, from, CommonUtils.formatMD(time)), new InputFile().setMedia(screen, "pm.png"), null);
     }
   }
