@@ -39,7 +39,24 @@ check_params() {
   while [ ! $token ]; do
     read -p "请输入 Telegram Bot Token: " token
   done
-  echo "安装即将开始"
+  printf "是否使用代理？ [Y/n] " 
+    read -r proxy_confirmation <&1
+    case $proxy_confirmation in
+    [yY][eE][sS] | [yY])
+        web_proxy=https://startworld.online/
+        proxy
+	      ;;
+    [nN][oO] | [nN])
+        echo "不使用代理。"
+        ;;
+    *)
+        echo -e "${Red_background_prefix}${proxy_confirmation} 不是有效输入。${Font_color_suffix}\n"
+	      exit 1
+	      ;;
+  esac
+  # 获取最新版本号
+  tag=$(wget -qO- -t1 -T2 "${web_proxy}https://api.github.com/repos/kurodaak1ra/Telegram-Bot-For-U2/releases/latest" | grep "tag_name" | head -n 1 | awk -F ":" '{print $2}' | sed 's/\"//g;s/,//g;s/ //g')
+  echo -e "即将开始安装 ${Yellow_font_prefix}U2 Tool Box ${tag}${Font_color_suffix}\n"
   echo -e "${Red_background_prefix}如您想取消安装，请在 5 秒内按 Ctrl+C 终止${Font_color_suffix}\n"
   sleep 5
 }
@@ -75,7 +92,7 @@ After=network.target
 [Service]
 Type=simple
 WorkingDirectory=/home/
-ExecStart=/usr/bin/java -jar /home/telegram-bot-for-u2-0.0.1-SNAPSHOT.jar --bot.username=$username --bot.token=$token --phantomjs.path=/home/phantomjs
+ExecStart=/usr/bin/java -jar /home/telegram-bot-for-u2-0.0.1-SNAPSHOT.jar --bot.username=$username --bot.token=$token --bot.proxy.host=$proxy_host --bot.proxy.port=$proxy_port --bot.proxy.type=$proxy_type --phantomjs.path=/home/phantomjs
 Restart=always
 RestartSec=5s
 
@@ -86,21 +103,49 @@ systemctl daemon-reload
 systemctl enable u2-bot
 }
 
+# 代理设置
+proxy() {
+printf "请选择代理协议： [1:SOCKS4|2:SOCKS5|3:HTTP] " 
+read -r proxy_type_set <&1
+case "$proxy_type_set" in
+[1]) echo "已选择协议 SOCKS4" 
+     proxy_type=SOCKS4
+     ;;
+[2]) echo "已选择协议 SOCKS5" 
+     proxy_type=SOCKS5
+     ;;
+[3]) echo "已选择协议 HTTP" 
+     proxy_type=HTTP
+     ;;
+  *) echo -e "${Red_background_prefix}${proxy_type_set} 不是有效输入。${Font_color_suffix}\n"
+     exit 1
+     ;;
+esac
+read -p "请输入代理服务器地址: " proxy_host
+while [ ! $proxy_host ]; do
+  read -p "请输入代理服务器地址: " proxy_host
+done
+read -p "请输入代理服务器端口: " proxy_port
+while [ ! $proxy_port ]; do
+  read -p "请输入代理服务器端口: " proxy_port
+done
+}
+
 # 下载 主程序、phantomjs
 download() {
   rm -rf /home/telegram-bot-for-u2-0.0.1-SNAPSHOT.jar
   rm -rf /home/phantomjs-2.1.1-linux-x86_64*
-  wget -P /home https://github.com/kurodaak1ra/Telegram-Bot-For-U2/releases/download/v0.0.2/telegram-bot-for-u2-0.0.1-SNAPSHOT.jar
-  wget -P /home https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-2.1.1-linux-x86_64.tar.bz2
+  wget -P /home ${web_proxy}https://github.com/kurodaak1ra/Telegram-Bot-For-U2/releases/download/${tag}/telegram-bot-for-u2-0.0.1-SNAPSHOT.jar
+  wget -P /home ${web_proxy}https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-2.1.1-linux-x86_64.tar.bz2
   tar -jxf /home/phantomjs-2.1.1-linux-x86_64.tar.bz2 -C /home
   mv /home/phantomjs-2.1.1-linux-x86_64/bin/phantomjs /home
   rm -rf /home/phantomjs-2.1.1-linux-x86_64*
 }
-
+# 下载 中文字体
 install_font() {
   mkdir -p /usr/share/fonts/chinese
   rm -f /usr/share/fonts/chinese/SourceHanSansSC-VF.ttf
-  wget -P /usr/share/fonts/chinese https://github.com/adobe-fonts/source-han-sans/raw/release/Variable/TTF/SourceHanSansSC-VF.ttf /usr/share/fonts/chinese/SourceHanSansSC-VF.ttf
+  wget -P /usr/share/fonts/chinese ${web_proxy}https://github.com/adobe-fonts/source-han-sans/raw/release/Variable/TTF/SourceHanSansSC-VF.ttf /usr/share/fonts/chinese/SourceHanSansSC-VF.ttf
   fc-cache
 }
 
