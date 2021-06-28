@@ -43,30 +43,30 @@ check_params() {
   done
   echo -e "\n"
 
-  read -p "是否使用代理运行 Bot [Y/n]\n" proxy_confirmation
+  read -p "是否使用代理运行 Bot [Y/n]: " proxy_confirmation
   case $proxy_confirmation in
-    [yY][eE][sS] | [yY])
+    [yY][eE][sS]|[yY])
       web_proxy=https://startworld.online/
       proxy
       ;;
-    [nN][oO] | [nN])
+    [nN][oO]|[nN])
       ;;
     *)
       echo -e "${Red_background_prefix} 输入无效，请重新输入 ${Font_color_suffix}"
-      read -p "是否使用代理运行 Bot [Y/n] " proxy_confirmation
+      read -p "是否使用代理运行 Bot [Y/n]: " proxy_confirmation
       ;;
   esac
   while [[ ! $proxy_confirmation =~ [yY]|[yY][eE][sS]|[nN]|[nN][oO] ]]; do
     case $proxy_confirmation in
-      [yY][eE][sS] | [yY])
+      [yY][eE][sS]|[yY])
         web_proxy=https://startworld.online/
         proxy
         ;;
-      [nN][oO] | [nN])
+      [nN][oO]|[nN])
         ;;
       *)
         echo -e "${Red_background_prefix} 输入无效，请重新输入 ${Font_color_suffix}"
-        read -p "是否使用代理运行 Bot [Y/n] " proxy_confirmation
+        read -p "是否使用代理运行 Bot [Y/n]: " proxy_confirmation
         ;;
     esac
   done
