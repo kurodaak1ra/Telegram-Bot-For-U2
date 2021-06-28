@@ -35,29 +35,46 @@ check_params() {
   if [ ${username:0:1} == "@" ]; then
     username=${username:1}
   fi
+  echo -e "\n"
+
   read -p "请输入 Telegram Bot Token: " token
   while [ ! $token ]; do
     read -p "请输入 Telegram Bot Token: " token
   done
-  printf "是否使用代理？ [Y/n] "
-    read -r proxy_confirmation <&1
-    case $proxy_confirmation in
+  echo -e "\n"
+
+  read -p "是否使用代理运行 Bot [Y/n]\n" proxy_confirmation
+  case $proxy_confirmation in
     [yY][eE][sS] | [yY])
       web_proxy=https://startworld.online/
       proxy
       ;;
     [nN][oO] | [nN])
-      echo "不使用代理。"
       ;;
     *)
-      echo -e "${Red_background_prefix}${proxy_confirmation} 不是有效输入。${Font_color_suffix}\n"
-      exit 1
+      echo -e "${Red_background_prefix} 输入无效，请重新输入 ${Font_color_suffix}"
+      read -p "是否使用代理运行 Bot [Y/n] " proxy_confirmation
       ;;
   esac
+  while [[ ! $proxy_confirmation =~ [yY]|[yY][eE][sS]|[nN]|[nN][oO] ]]; do
+    case $proxy_confirmation in
+      [yY][eE][sS] | [yY])
+        web_proxy=https://startworld.online/
+        proxy
+        ;;
+      [nN][oO] | [nN])
+        ;;
+      *)
+        echo -e "${Red_background_prefix} 输入无效，请重新输入 ${Font_color_suffix}"
+        read -p "是否使用代理？ [Y/n] " proxy_confirmation
+        ;;
+    esac
+  done
+
   # 获取最新版本号
   tag=$(wget -qO- -t1 -T2 "${web_proxy}https://api.github.com/repos/kurodaak1ra/Telegram-Bot-For-U2/releases/latest" | grep "tag_name" | head -n 1 | awk -F ":" '{print $2}' | sed 's/\"//g;s/,//g;s/ //g')
   echo -e "即将开始安装 ${Yellow_font_prefix}U2 Tool Box ${tag}${Font_color_suffix}\n"
-  echo -e "${Red_background_prefix}如您想取消安装，请在 5 秒内按 Ctrl+C 终止${Font_color_suffix}\n"
+  echo -e "${Red_background_prefix} 如您想取消安装，请在 5 秒内按 Ctrl+C 终止 ${Font_color_suffix}\n"
   sleep 5
 }
 
@@ -107,30 +124,36 @@ systemctl enable u2-bot
 proxy() {
   echo -e "请选择代理协议:\n\n ${Green_font_prefix}1.${Font_color_suffix} SOCKS4\n ${Green_font_prefix}2.${Font_color_suffix} SOCKS5\n ${Green_font_prefix}3.${Font_color_suffix} HTTP\n"
   read -p "请输入数字 [1-3]: " proxy_type_set
-  case "$proxy_type_set" in
-    [1]) proxy_type=SOCKS4
+  case $proxy_type_set in
+    [1])
+      proxy_type=SOCKS4
+      ;;
+    [2])
+      proxy_type=SOCKS5
+      ;;
+    [3])
+      proxy_type=HTTP
+      ;;
+      *)
+      echo -e "${Red_background_prefix} 输入无效，请重新输入 ${Font_color_suffix}"
+      read -p "请输入数字 [1-3]: " proxy_type_set
+      ;;
+  esac
+  while [[ ! $proxy_type_set =~ ^1$|^2$|^3$ ]]; do
+    case $proxy_type_set in
+      [1])
+        proxy_type=SOCKS4
         ;;
-    [2]) proxy_type=SOCKS5
+      [2])
+        proxy_type=SOCKS5
         ;;
-    [3]) proxy_type=HTTP
+      [3])
+        proxy_type=HTTP
         ;;
-      *) proxy_type=UNKNOWN
+        *)
         echo -e "${Red_background_prefix} 输入无效，请重新输入 ${Font_color_suffix}"
         read -p "请输入数字 [1-3]: " proxy_type_set
         ;;
-  esac
-  while [ $proxy_type == "UNKNOWN" ]; do
-    case "$proxy_type_set" in
-      [1]) proxy_type=SOCKS4
-          ;;
-      [2]) proxy_type=SOCKS5
-          ;;
-      [3]) proxy_type=HTTP
-          ;;
-        *) proxy_type=UNKNOWN
-          echo -e "${Red_background_prefix} 输入无效，请重新输入 ${Font_color_suffix}"
-          read -p "请输入数字 [1-3]: " proxy_type_set
-          ;;
     esac
   done
   echo -e "${Yellow_font_prefix}代理协议:${Font_color_suffix} ${Green_font_prefix}${proxy_type}${Font_color_suffix}\n"
@@ -142,47 +165,60 @@ proxy() {
   echo -e "${Yellow_font_prefix}代理地址:${Font_color_suffix} ${Green_font_prefix}${proxy_host}${Font_color_suffix}\n"
 
   read -p "请输入代理服务器端口: " proxy_port
-<<<<<<
-done
-printf "是否添加U2 Hosts？ [Y/n] " 
-    read -r hosts_confirmation <&1
-    case $hosts_confirmation in
-    [yY][eE][sS] | [yY])
-        hosts
-	      ;;
-    [nN][oO] | [nN])
-        echo "不添加U2 Hosts"
-        ;;
-    *)
-        echo -e "${Red_background_prefix}${hosts_confirmation} 不是有效输入。${Font_color_suffix}\n"
-	      exit 1
-	      ;;
-esac
-}
+  while [[ ! $proxy_port =~ ^([1-9][0-9]{0,3}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]{1}|6553[0-5])$ ]]; do
+    read -p "端口输入有误，请重新输入: " proxy_port
+  done
+  echo -e "${Yellow_font_prefix}代理端口:${Font_color_suffix} ${Green_font_prefix}${proxy_port}${Font_color_suffix}\n"
 
-# U2 Hosts添加
-hosts() {
-echo -e "# U2 Hosts Start\n104.25.26.31 u2.dmhy.org\n104.25.26.31 tracker.dmhy.org\n104.25.26.31 daydream.dmhy.best\n# Update time: $(date "+%Y-%m-%d %H:%M:%S")">> /etc/hosts
-echo "当前使用默认U2 Hosts"
-printf "是否使用CloudflareST来测试获取最快Cloudflare IP？ [Y/n] " 
-  read -r cfst_confirmation <&1
-  case $cfst_confirmation in
-  [yY][eE][sS] | [yY])
-      CloudflareST
-	    ;;
-  [nN][oO] | [nN])
-      echo "不使用CloudflareST测试"
+  echo -e "U2 Host 设置:\n\n ${Green_font_prefix}1.${Font_color_suffix} 默认 Host\n ${Green_font_prefix}2.${Font_color_suffix} CF 优选 IP\n ${Green_font_prefix}3.${Font_color_suffix} 不设置\n"
+  read -p "请输入数字 [1-3]: " hosts_setup
+  case $hosts_setup in
+    [1])
+      default_host
       ;;
-  *)
-      echo -e "${Red_background_prefix}${cfst_confirmation} 不是有效输入。${Font_color_suffix}\n"
-	    exit 1
-	    ;;
+    [2])
+      cloudflare_st
+      ;;
+    [3])
+      ;;
+    *)
+      echo -e "${Red_background_prefix} 输入无效，请重新输入 ${Font_color_suffix}"
+      read -p "请输入数字 [1-3]: " hosts_setup
+      ;;
   esac
+  while [[ ! $hosts_setup =~ ^1$|^2$|^3$ ]]; do
+    case $hosts_setup in
+      [1])
+        default_host
+        ;;
+      [2])
+        cloudflare_st
+        ;;
+      [3])
+        ;;
+      *)
+        echo -e "${Red_background_prefix} 输入无效，请重新输入 ${Font_color_suffix}"
+        read -p "请输入数字 [1-3]: " hosts_setup
+        ;;
+    esac
+  done
+  if [ $hosts_setup == 1 ]; then
+    echo -e "${Yellow_font_prefix}U2 Hosts:${Font_color_suffix} ${Green_font_prefix}默认${Font_color_suffix}\n"
+  elif [ $hosts_setup == 2 ]; then
+    echo -e "${Yellow_font_prefix}U2 Hosts:${Font_color_suffix} ${Green_font_prefix}CF 优选${Font_color_suffix}\n"
+  elif [ $hosts_setup == 3 ]; then
+    echo -e "${Yellow_font_prefix}U2 Hosts:${Font_color_suffix} ${Green_font_prefix}未设置${Font_color_suffix}\n"
+  fi
 }
 
-# CloudflareST测试程序
-CloudflareST() {
-  echo -e "${Green_font_prefix}> 正在下载 CloudflareST测试程序${Font_color_suffix}";
+# U2 默认 Host
+default_host() {
+  echo -e "\n# U2 Hosts Start\n104.25.26.31 u2.dmhy.org\n104.25.26.31 tracker.dmhy.org\n104.25.26.31 daydream.dmhy.best\n# Update time: $(date "+%Y-%m-%d %H:%M:%S")\n">> /etc/hosts
+}
+
+# CloudflareST 测试程序
+cloudflare_st() {
+  echo -e "${Green_font_prefix}> 正在下载 CloudflareST 测试程序${Font_color_suffix}";
   wget -P /home/CloudflareSTtar ${web_proxy}https://github.com/XIU2/CloudflareSpeedTest/releases/download/v1.4.10/CloudflareST_linux_amd64.tar.gz
   tar -zxf /home/CloudflareSTtar/CloudflareST_linux_amd64.tar.gz -C /home/CloudflareSTtar
   mv /home/CloudflareSTtar/CloudflareST /${USER}
@@ -196,23 +232,17 @@ CloudflareST() {
 	echo ${BESTIP} > nowip.txt
 	echo -e "\n旧 IP 为 ${NOWIP}\n${Yellow_font_prefix}新 IP 为 ${BESTIP}${Font_color_suffix}\n"
 
-	echo "${Green_font_prefix}> 开始备份 Hosts 文件（hosts_backup）...${Font_color_suffix}";
+	echo -e "${Green_font_prefix}> 开始备份 Hosts 文件 (hosts_backup)...${Font_color_suffix}";
 	\cp -f /etc/hosts /etc/hosts_backup
 
 	echo -e "${Green_font_prefix}> 开始替换...${Font_color_suffix}";
 	sed -i 's/'${NOWIP}'/'${BESTIP}'/g' /etc/hosts
 	echo -e "${Green_font_prefix}> 完成...${Font_color_suffix}";
-  echo -e "${Green_font_prefix}> 清理CloudflareST测试程序${Font_color_suffix}";
+  echo -e "${Green_font_prefix}> 清理 CloudflareST 测试程序${Font_color_suffix}";
   rm -rf /home/CloudflareSTtar*
   rm -rf /${USER}/CloudflareST
   rm -rf /${USER}/nowip.txt
   rm -rf /${USER}/ip.txt
-=======
-  while [[ ! $proxy_port =~ ^([1-9][0-9]{0,3}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]{1}|6553[0-5])$ ]]; do
-    read -p "端口输入有误，请重新输入: " proxy_port
-  done
-  echo -e "${Yellow_font_prefix}代理端口:${Font_color_suffix} ${Green_font_prefix}${proxy_port}${Font_color_suffix}\n"
->>>>>>
 }
 
 # 下载 主程序、phantomjs
@@ -225,6 +255,7 @@ download() {
   mv /home/phantomjs-2.1.1-linux-x86_64/bin/phantomjs /home
   rm -rf /home/phantomjs-2.1.1-linux-x86_64*
 }
+
 # 下载 中文字体
 install_font() {
   mkdir -p /usr/share/fonts/chinese
