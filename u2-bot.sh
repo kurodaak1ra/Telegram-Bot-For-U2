@@ -129,6 +129,69 @@ read -p "请输入代理服务器端口: " proxy_port
 while [ ! $proxy_port ]; do
   read -p "请输入代理服务器端口: " proxy_port
 done
+printf "是否添加U2 Hosts？ [Y/n] " 
+    read -r hosts_confirmation <&1
+    case $hosts_confirmation in
+    [yY][eE][sS] | [yY])
+        hosts
+	      ;;
+    [nN][oO] | [nN])
+        echo "不添加U2 Hosts"
+        ;;
+    *)
+        echo -e "${Red_background_prefix}${hosts_confirmation} 不是有效输入。${Font_color_suffix}\n"
+	      exit 1
+	      ;;
+esac
+}
+
+# U2 Hosts添加
+hosts() {
+echo -e "# U2 Hosts Start\n104.25.26.31 u2.dmhy.org\n104.25.26.31 tracker.dmhy.org\n104.25.26.31 daydream.dmhy.best\n# Update time: $(date "+%Y-%m-%d %H:%M:%S")">> /etc/hosts
+echo "当前使用默认U2 Hosts"
+printf "是否使用CloudflareST来测试获取最快Cloudflare IP？ [Y/n] " 
+  read -r cfst_confirmation <&1
+  case $cfst_confirmation in
+  [yY][eE][sS] | [yY])
+      CloudflareST
+	    ;;
+  [nN][oO] | [nN])
+      echo "不使用CloudflareST测试"
+      ;;
+  *)
+      echo -e "${Red_background_prefix}${cfst_confirmation} 不是有效输入。${Font_color_suffix}\n"
+	    exit 1
+	    ;;
+  esac
+}
+
+# CloudflareST测试程序
+CloudflareST() {
+  echo -e "${Green_font_prefix}> 正在下载 CloudflareST测试程序${Font_color_suffix}";
+  wget -P /home/CloudflareSTtar ${web_proxy}https://github.com/XIU2/CloudflareSpeedTest/releases/download/v1.4.10/CloudflareST_linux_amd64.tar.gz
+  tar -zxf /home/CloudflareSTtar/CloudflareST_linux_amd64.tar.gz -C /home/CloudflareSTtar
+  mv /home/CloudflareSTtar/CloudflareST /${USER}
+  mv /home/CloudflareSTtar/ip.txt /${USER}
+  chmod +x /${USER}/CloudflareST
+  echo "104.25.26.31" > nowip.txt
+	echo -e "${Green_font_prefix}> 开始测速...${Font_color_suffix}";
+	NOWIP=$(head -1 nowip.txt)
+    ./CloudflareST
+	BESTIP=$(sed -n "2,1p" result.csv | awk -F, '{print $1}')
+	echo ${BESTIP} > nowip.txt
+	echo -e "\n旧 IP 为 ${NOWIP}\n${Yellow_font_prefix}新 IP 为 ${BESTIP}${Font_color_suffix}\n"
+
+	echo "${Green_font_prefix}> 开始备份 Hosts 文件（hosts_backup）...${Font_color_suffix}";
+	\cp -f /etc/hosts /etc/hosts_backup
+
+	echo -e "${Green_font_prefix}> 开始替换...${Font_color_suffix}";
+	sed -i 's/'${NOWIP}'/'${BESTIP}'/g' /etc/hosts
+	echo -e "${Green_font_prefix}> 完成...${Font_color_suffix}";
+  echo -e "${Green_font_prefix}> 清理CloudflareST测试程序${Font_color_suffix}";
+  rm -rf /home/CloudflareSTtar*
+  rm -rf /${USER}/CloudflareST
+  rm -rf /${USER}/nowip.txt
+  rm -rf /${USER}/ip.txt
 }
 
 # 下载 主程序、phantomjs
