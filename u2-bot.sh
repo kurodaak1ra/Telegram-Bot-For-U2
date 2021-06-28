@@ -39,20 +39,20 @@ check_params() {
   while [ ! $token ]; do
     read -p "请输入 Telegram Bot Token: " token
   done
-  printf "是否使用代理？ [Y/n] " 
+  printf "是否使用代理？ [Y/n] "
     read -r proxy_confirmation <&1
     case $proxy_confirmation in
     [yY][eE][sS] | [yY])
-        web_proxy=https://startworld.online/
-        proxy
-	      ;;
+      web_proxy=https://startworld.online/
+      proxy
+      ;;
     [nN][oO] | [nN])
-        echo "不使用代理。"
-        ;;
+      echo "不使用代理。"
+      ;;
     *)
-        echo -e "${Red_background_prefix}${proxy_confirmation} 不是有效输入。${Font_color_suffix}\n"
-	      exit 1
-	      ;;
+      echo -e "${Red_background_prefix}${proxy_confirmation} 不是有效输入。${Font_color_suffix}\n"
+      exit 1
+      ;;
   esac
   # 获取最新版本号
   tag=$(wget -qO- -t1 -T2 "${web_proxy}https://api.github.com/repos/kurodaak1ra/Telegram-Bot-For-U2/releases/latest" | grep "tag_name" | head -n 1 | awk -F ":" '{print $2}' | sed 's/\"//g;s/,//g;s/ //g')
@@ -105,30 +105,47 @@ systemctl enable u2-bot
 
 # 代理设置
 proxy() {
-printf "请选择代理协议： [1:SOCKS4|2:SOCKS5|3:HTTP] " 
-read -r proxy_type_set <&1
-case "$proxy_type_set" in
-[1]) echo "已选择协议 SOCKS4" 
-     proxy_type=SOCKS4
-     ;;
-[2]) echo "已选择协议 SOCKS5" 
-     proxy_type=SOCKS5
-     ;;
-[3]) echo "已选择协议 HTTP" 
-     proxy_type=HTTP
-     ;;
-  *) echo -e "${Red_background_prefix}${proxy_type_set} 不是有效输入。${Font_color_suffix}\n"
-     exit 1
-     ;;
-esac
-read -p "请输入代理服务器地址: " proxy_host
-while [ ! $proxy_host ]; do
-  read -p "请输入代理服务器地址: " proxy_host
-done
-read -p "请输入代理服务器端口: " proxy_port
-while [ ! $proxy_port ]; do
+  echo -e "请选择代理协议:\n\n ${Green_font_prefix}1.${Font_color_suffix} SOCKS4\n ${Green_font_prefix}2.${Font_color_suffix} SOCKS5\n ${Green_font_prefix}3.${Font_color_suffix} HTTP\n"
+  read -p "请输入数字 [1-3]: " proxy_type_set
+  case "$proxy_type_set" in
+    [1]) proxy_type=SOCKS4
+        ;;
+    [2]) proxy_type=SOCKS5
+        ;;
+    [3]) proxy_type=HTTP
+        ;;
+      *) proxy_type=UNKNOWN
+        echo -e "${Red_background_prefix} 输入无效，请重新输入 ${Font_color_suffix}"
+        read -p "请输入数字 [1-3]: " proxy_type_set
+        ;;
+  esac
+  while [ $proxy_type == "UNKNOWN" ]; do
+    case "$proxy_type_set" in
+      [1]) proxy_type=SOCKS4
+          ;;
+      [2]) proxy_type=SOCKS5
+          ;;
+      [3]) proxy_type=HTTP
+          ;;
+        *) proxy_type=UNKNOWN
+          echo -e "${Red_background_prefix} 输入无效，请重新输入 ${Font_color_suffix}"
+          read -p "请输入数字 [1-3]: " proxy_type_set
+          ;;
+    esac
+  done
+  echo -e "${Yellow_font_prefix}代理协议:${Font_color_suffix} ${Green_font_prefix}${proxy_type}${Font_color_suffix}\n"
+
+  read -p "请输入代理服务器地址 (IP): " proxy_host
+  while [[ ! $proxy_host =~ ^([0-9]{1,2}|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\.([0-9]{1,2}|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\.([0-9]{1,2}|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\.([0-9]{1,2}|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$ ]]; do
+    read -p "IP 地址输入有误，请重新输入: " proxy_host
+  done
+  echo -e "${Yellow_font_prefix}代理地址:${Font_color_suffix} ${Green_font_prefix}${proxy_host}${Font_color_suffix}\n"
+
   read -p "请输入代理服务器端口: " proxy_port
-done
+  while [[ ! $proxy_port =~ ^([1-9][0-9]{0,3}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]{1}|6553[0-5])$ ]]; do
+    read -p "端口输入有误，请重新输入: " proxy_port
+  done
+  echo -e "${Yellow_font_prefix}代理端口:${Font_color_suffix} ${Green_font_prefix}${proxy_port}${Font_color_suffix}\n"
 }
 
 # 下载 主程序、phantomjs
