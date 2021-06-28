@@ -232,7 +232,7 @@ cloudflare_st() {
 	echo ${BESTIP} > nowip.txt
 	echo -e "\n旧 IP 为 ${NOWIP}\n${Yellow_font_prefix}新 IP 为 ${BESTIP}${Font_color_suffix}\n"
 
-	echo -e "${Green_font_prefix}> 开始备份 Hosts 文件 (hosts_backup)...${Font_color_suffix}";
+	echo -e "${Green_font_prefix}> 开始备份 Hosts 文件 (/etc/hosts.bk)...${Font_color_suffix}";
 	\cp -f /etc/hosts /etc/hosts.bk
 
 	echo -e "${Green_font_prefix}> 开始替换...${Font_color_suffix}";
