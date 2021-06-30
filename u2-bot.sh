@@ -122,7 +122,7 @@ systemctl enable u2-bot
 
 # 代理设置
 proxy() {
-  echo -e "请选择代理协议:\n\n ${Green_font_prefix}1.${Font_color_suffix} SOCKS4\n ${Green_font_prefix}2.${Font_color_suffix} SOCKS5\n ${Green_font_prefix}3.${Font_color_suffix} HTTP\n"
+  echo -e "请选择代理协议 (不建议使用 Socks 代理，可能会导致无法启动):\n\n ${Green_font_prefix}1.${Font_color_suffix} SOCKS4\n ${Green_font_prefix}2.${Font_color_suffix} SOCKS5\n ${Green_font_prefix}3.${Font_color_suffix} HTTP\n"
   read -p "请输入数字 [1-3]: " proxy_type_set
   case $proxy_type_set in
     [1])
