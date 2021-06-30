@@ -2,6 +2,26 @@
 
 Green_font_prefix="\033[32m" && Red_font_prefix="\033[31m" && Yellow_font_prefix="\033[33m" && Green_background_prefix="\033[42;37m" && Red_background_prefix="\033[41;37m" && Font_color_suffix="\033[0m"
 
+# 检测系统发行版本
+check_sys() {
+  if [[ -f /etc/redhat-release ]]; then
+    release="centos"
+  elif cat /etc/issue | grep -q -E -i "debian"; then
+    release="debian"
+  elif cat /etc/issue | grep -q -E -i "ubuntu"; then
+    release="ubuntu"
+  elif cat /etc/issue | grep -q -E -i "centos|red hat|redhat"; then
+    release="centos"
+  elif cat /proc/version | grep -q -E -i "debian"; then
+    release="debian"
+  elif cat /proc/version | grep -q -E -i "ubuntu"; then
+    release="ubuntu"
+  elif cat /proc/version | grep -q -E -i "centos|red hat|redhat"; then
+    release="centos"
+  fi
+  bit=`uname -m`
+}
+
 # 判断 root 用户
 check_root() {
   if [ `whoami` != "root" ]; then
@@ -50,6 +70,9 @@ check_params() {
       proxy
       ;;
     [nN][oO]|[nN])
+      proxy_type="NO_PROXY"
+      proxy_host="localhost"
+      proxy_port="1080"
       ;;
     *)
       echo -e "${Red_background_prefix} 输入无效，请重新输入 ${Font_color_suffix}"
@@ -71,31 +94,21 @@ check_params() {
     esac
   done
 
-  # 获取最新版本号
-  tag=$(wget -qO- -t1 -T2 "${web_proxy}https://api.github.com/repos/kurodaak1ra/Telegram-Bot-For-U2/releases/latest" | grep "tag_name" | head -n 1 | awk -F ":" '{print $2}' | sed 's/\"//g;s/,//g;s/ //g')
-  echo -e "即将开始安装 ${Yellow_font_prefix}U2 Tool Box ${tag}${Font_color_suffix}\n"
+  echo -e "\n即将开始安装 U2 Tool Box"
   echo -e "${Red_background_prefix} 如您想取消安装，请在 5 秒内按 Ctrl+C 终止 ${Font_color_suffix}\n"
   sleep 5
-}
 
-# 检测系统发行版本
-check_sys() {
-  if [[ -f /etc/redhat-release ]]; then
-    release="centos"
-  elif cat /etc/issue | grep -q -E -i "debian"; then
-    release="debian"
-  elif cat /etc/issue | grep -q -E -i "ubuntu"; then
-    release="ubuntu"
-  elif cat /etc/issue | grep -q -E -i "centos|red hat|redhat"; then
-    release="centos"
-  elif cat /proc/version | grep -q -E -i "debian"; then
-    release="debian"
-  elif cat /proc/version | grep -q -E -i "ubuntu"; then
-    release="ubuntu"
-  elif cat /proc/version | grep -q -E -i "centos|red hat|redhat"; then
-    release="centos"
+  echo -e "${Green_font_prefix}> 正在更新系统${Font_color_suffix}";
+  if [ "$release" = "centos" ]; then
+    yum update -y
   fi
-  bit=`uname -m`
+  echo -e "${Green_font_prefix}> 正在安装必要的运行环境${Font_color_suffix}";
+  if [ "$release" = "centos" ]; then
+    yum install -y wget
+  fi
+
+  # 获取最新版本号
+  tag=$(wget -qO- -t1 -T2 "${web_proxy}https://api.github.com/repos/kurodaak1ra/Telegram-Bot-For-U2/releases/latest" | grep "tag_name" | head -n 1 | awk -F ":" '{print $2}' | sed 's/\"//g;s/,//g;s/ //g')
 }
 
 # 进程守护写入
@@ -275,10 +288,10 @@ install_font() {
 
 # CentOS
 yum_install() {
+  echo -e "${Green_font_prefix}> 正在安装必要的运行环境${Font_color_suffix}";
+  yum install -y tar bzip2 fontconfig
   echo -e "${Green_font_prefix}> 正在安装 openjdk8${Font_color_suffix}";
   yum install -y java-1.8.0-openjdk java-1.8.0-openjdk-devel
-  echo -e "${Green_font_prefix}> 正在安装必要的运行环境${Font_color_suffix}";
-  yum install -y wget bzip2 fontconfig
   echo -e "${Green_font_prefix}> 正在下载 主程序、phantomjs、中文字体${Font_color_suffix}";
   download
   echo -e "${Green_font_prefix}> 正在安装中文字体${Font_color_suffix}";
@@ -305,7 +318,6 @@ install_require() {
   fi
   exit 1
 }
-
 
 # 检测系统发行版本
 check_sys
