@@ -42,9 +42,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocket;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.cert.CertificateException;
@@ -141,14 +139,17 @@ public class HttpUtils {
 
       byte[] result = EntityUtils.toByteArray(response.getEntity());
       int code = response.getStatusLine().getStatusCode();
-      if (!Pattern.compile("messages\\.php|/promotion\\.php").matcher(request.getURI().toString()).find()) {
+      ParseHTML html = isHTML(result);
+      if (Objects.nonNull(html) && !html.getIs()) {
         log.info("[Session] {}", session);
         log.info("[{} Response <{}> <{}>]\n\n{}\n", request.getMethod(), code, request.getURI(), response);
+
+        BufferedReader br = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(result)));
+        if (!Pattern.compile("JPEG|PNG|GIF").matcher(br.readLine()).find()) {
+          log.info("[{} Response Body <{}> <{}>]\n\n{}\n", request.getMethod(), code, request.getURI(), new String(result));
+        }
       }
-      ParseHTML html = isHTML(result);
       if (code == 200 && Objects.nonNull(html) && html.getIs()) isLogin(gid, html.getHtml());
-      // log.info("[{} Response Body <{}> <{}>]\n\n{}\n", request.getMethod(), code, request.getURI(), new String(result));
-      if (Objects.nonNull(html) && !html.getIs()) log.info("[{} Response Body <{}> <{}>]\n\n{}\n", request.getMethod(), code, request.getURI(), new String(result));
       if (code >= 400 && code < 500) {
         Store.context.getBean(Receiver.class).sendMsg(gid, "md", MsgTpl.NOT_FOUND, null);
         throw new HttpException(code, result.toString());
@@ -182,7 +183,12 @@ public class HttpUtils {
     return new RespGet(resp.getCode(), resp.getResult(), null);
   }
   public static InputStream getPic(Long gid, String uri) throws HttpException {
-    HttpGet get = new HttpGet(u2.getDomain() + uri);
+    HttpGet get = null;
+    if (Pattern.compile("^http").matcher(uri).find()) {
+      get = new HttpGet(uri);
+    } else {
+      get = new HttpGet(u2.getDomain() + (uri.charAt(0) == '/' ? uri : "/" + uri));
+    }
     get.addHeader("accept", "*/*");
     get.addHeader("user-agent", UA);
     if (!session.isEmpty()) get.addHeader("cookie", cookieToString());

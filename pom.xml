@@ -10,7 +10,7 @@
     </parent>
     <groupId>jp.ka</groupId>
     <artifactId>telegram-bot-for-u2</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
     <name>telegram-bot-for-u2</name>
     <description>Telegram Bot - U2 Tool Box</description>
     <properties>

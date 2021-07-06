@@ -71,7 +71,7 @@ public class Receiver extends TelegramLongPollingBot {
       Long gid = msg.getChatId();
       Long uid = msg.getFrom().getId();
       if (!gid.equals(uid)) return;
-      if (Objects.nonNull(  user.getId()) && !uid.equals(  user.getId())) {
+      if (Objects.nonNull(user.getId()) && !uid.equals(user.getId())) {
         sendMsg(gid, "md", "无权操作", null);
         return;
       }

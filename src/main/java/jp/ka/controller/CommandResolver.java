@@ -42,7 +42,7 @@ public class CommandResolver {
       Command command = commandMap.get(commandText.substring(1));
       if (Objects.isNull(command)) return;
 
-      if ((Objects.nonNull(  user.getId()) && (!command.getClass().getSimpleName().equals("CaptchaCommand") && !command.getClass().getSimpleName().equals("LoginCommand"))) || (Objects.isNull(  user.getId()) && !command.needLogin())) {
+      if ((Objects.nonNull(user.getId()) && (!command.getClass().getSimpleName().equals("CaptchaCommand") && !command.getClass().getSimpleName().equals("LoginCommand"))) || (Objects.isNull(user.getId()) && !command.needLogin())) {
         String firstLine = msg.getText().toUpperCase().split("\n")[0].trim();
         if (firstLine.contains(" ")) {
           Message prompt = command.prompt(msg.getChatId());
@@ -60,7 +60,7 @@ public class CommandResolver {
       }
 
       String errMsg = "*请登陆*";
-      if (Objects.nonNull(  user.getId())) errMsg = "*您已登陆*";
+      if (Objects.nonNull(user.getId())) errMsg = "*您已登陆*";
       Store.context.getBean(Receiver.class).sendMsg(msg.getChatId(), "md", errMsg, null);
     }
   }

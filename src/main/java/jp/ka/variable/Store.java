@@ -41,7 +41,7 @@ public class Store {
 
   public static Map<String, Map<String, String>> FREE_INFO = new HashMap<>();
 
-  public static int PUSH_INTERVAL_TIME = 30 * 1000;
+  public static int PUSH_INTERVAL_TIME = 40 * 1000;
 
   public static boolean PM_PUSH = true;
   public static boolean FREE_PUSH = true;

@@ -29,7 +29,7 @@ public class CaptchaCallback implements Callback {
     switch (cbData) {
       case "refresh": {
         receiver.sendDel(gid, mid);
-        if (Objects.nonNull(  user.getId())) return;
+        if (Objects.nonNull(user.getId())) return;
         Store.context.getBean(CaptchaCommand.class).sendCaptcha(gid);
       }
     }

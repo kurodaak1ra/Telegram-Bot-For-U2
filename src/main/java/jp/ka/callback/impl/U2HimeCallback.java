@@ -51,8 +51,7 @@ public class U2HimeCallback implements Callback {
       if (reply.size() == 2) {
         String imgSrc = reply.get(1).attr("src");
         if (!imgSrc.equals("")) {
-          String uri = imgSrc.replaceAll(u2.getDomain(), "");
-          InputStream pic = HttpUtils.getPic(gid, uri.charAt(0) == '/' ? uri : "/" + uri);
+          InputStream pic = HttpUtils.getPic(gid, imgSrc);
           if (!replyMsg.equals("")) replyMsg = "*U2娘* " + CommonUtils.formatMD(replyMsg);
           receiver.sendImg(gid, "md", replyMsg, new InputFile().setMedia(pic, "img.png"), null);
           return;
