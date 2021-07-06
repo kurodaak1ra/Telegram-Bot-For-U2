@@ -122,7 +122,7 @@ After=network.target
 [Service]
 Type=simple
 WorkingDirectory=/home/
-ExecStart=/usr/bin/java -jar /home/telegram-bot-for-u2-0.0.1-SNAPSHOT.jar --bot.username=$username --bot.token=$token --bot.proxy.host=$proxy_host --bot.proxy.port=$proxy_port --bot.proxy.type=$proxy_type --phantomjs.path=/home/phantomjs
+ExecStart=/usr/bin/java -jar /home/telegram-bot-for-u2-$tag-SNAPSHOT.jar --bot.username=$username --bot.token=$token --bot.proxy.host=$proxy_host --bot.proxy.port=$proxy_port --bot.proxy.type=$proxy_type --phantomjs.path=/home/phantomjs
 Restart=always
 RestartSec=5s
 
