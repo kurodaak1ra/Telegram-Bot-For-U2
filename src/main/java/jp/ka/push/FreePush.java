@@ -84,18 +84,35 @@ public class FreePush {
         String to = columns.get(3).text();
         String status = columns.get(5).text();
 
-        if (Store.FREE_INFO.containsKey(fid)) {
-          Map<String, String> val = Store.FREE_INFO.get(fid);
-          long difference = SDF.parse(val.get("end_time") + " +0800").getTime() - new Date().getTime();
-          if (difference <= 0) {
+        // 检查列表内项目是否过期
+        for (Map.Entry<String, Map<String, String>> entry : Store.FREE_INFO.entrySet()) {
+          Map<String, String> active = entry.getValue();
+          long different = SDF.parse(active.get("end_time") + " +0800").getTime() - new Date().getTime();
+          if (different <= 0) {
             Store.FREE_INFO.remove(fid);
-            Store.context.getBean(Receiver.class).sendMsg(user.getId(), "md", String.format("*全站 FREE 到期提醒*\n\n魔法: [\\#%s](%s/promotion.php?action=detail&id=%s)\n创建: [%s](%s/userdetails.php?id=%s)\n开始: `%s`\n结束: `%s`\n类型: `%s`\n备注: `%s`",
-            fid, u2.getDomain(), fid, val.get("cname"), u2.getDomain(), val.get("cid"), val.get("create_time"), val.get("end_time"), val.get("rate"), val.get("remarks")), null);
+            sendNotice("expired", fid, active.get("cid"), active.get("cname"), active.get("create_time"), active.get("start_time"), active.get("end_time"), active.get("rate"), active.get("remarks"));
           }
-          continue;
         }
 
-        if (type.equals("魔法") && torrent.equals("全局") && to.equals("所有人") && status.equals("有效")) freeNotice(fid);
+        // 检查未生效列表内项目是否生效
+        for (Map.Entry<String, Map<String, String>> entry : Store.FREE_INFO_NOT_ACTIVE.entrySet()) {
+          Map<String, String> notActive = entry.getValue();
+          long different = SDF.parse(notActive.get("start_time") + " +0800").getTime() - new Date().getTime();
+          if (different <= 0) {
+            Store.FREE_INFO_NOT_ACTIVE.remove(fid);
+            Store.FREE_INFO.put(fid, notActive);
+            sendNotice("active", fid, notActive.get("cid"), notActive.get("cname"), notActive.get("create_time"), notActive.get("start_time"), notActive.get("end_time"), notActive.get("rate"), notActive.get("remarks"));
+          }
+        }
+
+        // 如果列表包含当前 free id 则跳过
+        if (Store.FREE_INFO.containsKey(fid) || Store.FREE_INFO_NOT_ACTIVE.containsKey(fid)) continue;
+
+        // 添加新 free 到列表
+        if (type.equals("魔法") && torrent.equals("全局") && to.equals("所有人")) {
+          if (status.equals("已失效")) continue;
+          freeNotice(fid, status.equals("有效") ? true : false);
+        }
       }
       Store.FREE_PUSH_REQ_FAILED_TIMES = 0;
     } catch (HttpException | ParseException e) {
@@ -110,7 +127,7 @@ public class FreePush {
   }
 
   @SneakyThrows
-  private static void freeNotice(String fid) {
+  private static void freeNotice(String fid, boolean active) {
     RespGet resp = HttpUtils.get(user.getId(), "/promotion.php?action=detail&id=" + fid);
     Elements tables = resp.getHtml().getElementById("outer").getElementsByTag("table");
     Element content = tables.get(tables.size() - 1);
@@ -121,6 +138,7 @@ public class FreePush {
     String cname = creator.text();
 
     String createTime = rows.get(3).child(1).getElementsByTag("time").attr("title");
+    String startTime = rows.get(4).child(1).getElementsByTag("time").attr("title");
     String endTime = rows.get(5).child(1).getElementsByTag("time").text();
 
     Element _rate = rows.get(6).child(1);
@@ -131,6 +149,7 @@ public class FreePush {
       rateUp = _rate.child(2).text();
       rateDown = _rate.child(4).text();
     }
+    String tmpRate = CommonUtils.torrentStatus(rate, rateUp, rateDown);
 
     List<TextNode> mark = rows.get(7).child(1).getElementsByTag("fieldset").get(0).textNodes();
     String remarks = mark.size() == 0 ? "" : mark.get(0).text();
@@ -140,13 +159,38 @@ public class FreePush {
     map.put("cid", cid);
     map.put("cname", CommonUtils.formatMD(cname));
     map.put("create_time", createTime);
+    map.put("start_time", startTime);
     map.put("end_time", endTime);
-    map.put("rate", CommonUtils.torrentStatus(rate, rateUp, rateDown));
+    map.put("rate", tmpRate);
     map.put("remarks", remarks);
-    Store.FREE_INFO.put(fid, map);
+    if (active) {
+      Store.FREE_INFO.put(fid, map);
+      sendNotice("active", fid, cid, cname, createTime, startTime, endTime, rate, remarks);
+    } else {
+      Store.FREE_INFO_NOT_ACTIVE.put(fid, map);
+      sendNotice("not-active", fid, cid, cname, createTime, startTime, endTime, rate, remarks);
+    }
+  }
 
-    Store.context.getBean(Receiver.class).sendMsg(user.getId(), "md", String.format("*全站 FREE 提醒*\n\n魔法: [\\#%s](%s/promotion.php?action=detail&id=%s)\n创建: [%s](%s/userdetails.php?id=%s)\n开始: `%s`\n结束: `%s`\n类型: `%s`\n备注: `%s`",
-      fid, u2.getDomain(), fid, CommonUtils.formatMD(cname), u2.getDomain(), cid, createTime, endTime, CommonUtils.torrentStatus(rate, rateUp, rateDown), remarks), null);
+  private static void sendNotice(String type, String fid, String cid, String cname, String createTime, String startTime, String endTime, String rate, String remarks) {
+    String prefix = "";
+    switch (type) {
+      case "not-active": {
+        prefix = "*全站 FREE 预告提醒*";
+        break;
+      }
+      case "active": {
+        prefix = "*全站 FREE 提醒*";
+        break;
+      }
+      case "expired": {
+        prefix = "*全站 FREE 到期提醒*";
+        break;
+      }
+    }
+
+    Store.context.getBean(Receiver.class).sendMsg(user.getId(), "md", String.format("%s\n\n魔法: [\\#%s](%s/promotion.php?action=detail&id=%s)\n用户: [%s](%s/userdetails.php?id=%s)\n创建: `%s`\n开始: `%s`\n结束: `%s`\n类型: `%s`\n备注: `%s`",
+      prefix, fid, u2.getDomain(), fid, CommonUtils.formatMD(cname), u2.getDomain(), cid, createTime, startTime, endTime, rate, remarks), null);
   }
 
 }

@@ -40,6 +40,7 @@ public class Store {
   public static String TORRENT_MAGIC_TYPE = "";
 
   public static Map<String, Map<String, String>> FREE_INFO = new HashMap<>();
+  public static Map<String, Map<String, String>> FREE_INFO_NOT_ACTIVE = new HashMap<>();
 
   public static int PUSH_INTERVAL_TIME = 40 * 1000;
 
