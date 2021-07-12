@@ -113,6 +113,7 @@ check_params() {
 
 # 进程守护写入
 systemd() {
+  rm -f /etc/systemd/system/u2-bot.service
   touch /etc/systemd/system/u2-bot.service
   cat > "/etc/systemd/system/u2-bot.service"<<-EOF
 [Unit]
@@ -260,7 +261,7 @@ cloudflare_st() {
 
 # 下载 主程序、phantomjs
 download() {
-  rm -rf /home/telegram-bot-for-u2-0.0.1-SNAPSHOT.jar
+  rm -rf /home/telegram-bot-for-u2-${tag}-SNAPSHOT.jar
   rm -rf /home/phantomjs-2.1.1-linux-x86_64*
   wget -P /home ${web_proxy}https://github.com/kurodaak1ra/Telegram-Bot-For-U2/releases/download/${tag}/telegram-bot-for-u2-${tag}-SNAPSHOT.jar
   wget -P /home ${web_proxy}https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-2.1.1-linux-x86_64.tar.bz2
@@ -271,8 +272,8 @@ download() {
 
 # 下载 中文字体
 install_font() {
+  rm -rf /usr/share/fonts/chinese
   mkdir -p /usr/share/fonts/chinese
-  rm -f /usr/share/fonts/chinese/SourceHanSansSC-VF.ttf
   wget -P /usr/share/fonts/chinese ${web_proxy}https://github.com/adobe-fonts/source-han-sans/raw/release/Variable/TTF/SourceHanSansSC-VF.ttf /usr/share/fonts/chinese/SourceHanSansSC-VF.ttf
   fc-cache
 }
