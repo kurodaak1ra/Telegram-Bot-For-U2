@@ -64,7 +64,7 @@ public class CommandTools {
     receiver.sendMsg(gid, "md", tmpMsg, null);
   }
 
-  public static void setData(Long gid) {
+  public static void saveDataToDB(Long gid) {
     RespGet resp1 = HttpUtils.get(gid, "/usercp.php");
     U2Info.passKey = resp1.getHtml().getElementsByClass("hidden-click").get(0).attr("data-content");
 
@@ -78,7 +78,7 @@ public class CommandTools {
 
   public static void loginSucc(Long gid) {
     PhantomjsUtils.init();
-    CommandTools.setData(gid);
+    CommandTools.saveDataToDB(gid);
     CommandTools.userInfo(gid);
     CommonUtils.pushServiceStart();
   }

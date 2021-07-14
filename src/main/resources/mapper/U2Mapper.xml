@@ -31,4 +31,12 @@
     SELECT k, v FROM cookie
   </select>
 
+  <delete id="clearCookie">
+    DELETE FROM cookie;
+  </delete>
+
+  <delete id="clearInfo">
+    DELETE FROM info;
+  </delete>
+
 </mapper>

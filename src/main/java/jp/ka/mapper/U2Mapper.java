@@ -15,4 +15,7 @@ public interface U2Mapper {
 
   UserCookie[] queryCookies();
 
+  void clearCookie();
+  void clearInfo();
+
 }
