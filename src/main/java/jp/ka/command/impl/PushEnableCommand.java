@@ -30,7 +30,7 @@ public class PushEnableCommand implements Command {
         Arrays.asList(Store.FREE_PUSH ? "■" : "□", CMD.PUSH_SERVICE + ":free")
       )),
       Arrays.asList(Arrays.asList(
-        Arrays.asList("签到 提醒"),
+        Arrays.asList("签到 提醒(12:00)"),
         Arrays.asList(Store.SIGN_PUSH ? "■" : "□", CMD.PUSH_SERVICE + ":sign")
       )),
       Arrays.asList(Arrays.asList(
