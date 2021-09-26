@@ -45,6 +45,7 @@ public class Store {
 
   public static boolean PM_PUSH = true;
   public static boolean FREE_PUSH = true;
+  public static boolean SIGN_PUSH = true;
 
   public static int PM_PUSH_REQ_FAILED_TIMES = 0;
   public static int FREE_PUSH_REQ_FAILED_TIMES = 0;
