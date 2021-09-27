@@ -5,6 +5,7 @@ import jp.ka.command.Command;
 import jp.ka.controller.Receiver;
 import jp.ka.push.FreePush;
 import jp.ka.push.PmPush;
+import jp.ka.push.SignPush;
 import jp.ka.variable.Store;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -35,6 +36,11 @@ public class PushServiceCallback implements Callback {
         else FreePush.start();
         break;
       }
+        case "sign": {
+            if (Store.SIGN_PUSH) SignPush.stop();
+            else SignPush.start();
+            break;
+        }
     }
 
     receiver.sendEditMsg(gid, mid, "md", "*推送服务控制台*", Arrays.asList(
@@ -45,6 +51,10 @@ public class PushServiceCallback implements Callback {
       Arrays.asList(Arrays.asList(
         Arrays.asList("全站 FREE 提醒"),
         Arrays.asList(Store.FREE_PUSH ? "■" : "□", Command.CMD.PUSH_SERVICE + ":free")
+      )),
+      Arrays.asList(Arrays.asList(
+        Arrays.asList("签到 提醒(12:00)"),
+        Arrays.asList(Store.SIGN_PUSH ? "■" : "□", Command.CMD.PUSH_SERVICE + ":sign")
       )),
       Arrays.asList(Arrays.asList(
         Arrays.asList("❌", Callback.CBK.TORRENT_LINK + ":close")
